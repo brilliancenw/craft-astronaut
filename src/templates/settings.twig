@@ -20,18 +20,6 @@
 
     <h3>Claude (Anthropic)</h3>
 
-    {% set envKeys = {
-        'claude': craft.app.plugins.getPlugin('launcher-assistant').aiSettingsService.hasEnvApiKey('claude'),
-        'openai': craft.app.plugins.getPlugin('launcher-assistant').aiSettingsService.hasEnvApiKey('openai'),
-        'gemini': craft.app.plugins.getPlugin('launcher-assistant').aiSettingsService.hasEnvApiKey('gemini')
-    } %}
-
-    {% set maskedKeys = {
-        'claude': craft.app.plugins.getPlugin('launcher-assistant').aiSettingsService.getMaskedApiKey('claude'),
-        'openai': craft.app.plugins.getPlugin('launcher-assistant').aiSettingsService.getMaskedApiKey('openai'),
-        'gemini': craft.app.plugins.getPlugin('launcher-assistant').aiSettingsService.getMaskedApiKey('gemini')
-    } %}
-
     {% if envKeys.claude %}
         <div style="background: #d1fae5; border: 1px solid #10b981; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
             <strong>Environment Variable Set:</strong> Claude API key is configured via <code>LAUNCHER_CLAUDE_API_KEY</code> environment variable.

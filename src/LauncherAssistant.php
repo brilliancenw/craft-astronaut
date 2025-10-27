@@ -278,6 +278,32 @@ HTML;
     /**
      * @inheritdoc
      */
+    protected function settingsHtml(): ?string
+    {
+        // Get masked API keys for display
+        $maskedKeys = [
+            'claude' => $this->aiSettingsService->getMaskedApiKey('claude'),
+            'openai' => $this->aiSettingsService->getMaskedApiKey('openai'),
+            'gemini' => $this->aiSettingsService->getMaskedApiKey('gemini'),
+        ];
+
+        // Check which keys are set via environment variables
+        $envKeys = [
+            'claude' => $this->aiSettingsService->hasEnvApiKey('claude'),
+            'openai' => $this->aiSettingsService->hasEnvApiKey('openai'),
+            'gemini' => $this->aiSettingsService->hasEnvApiKey('gemini'),
+        ];
+
+        return Craft::$app->getView()->renderTemplate('launcher-assistant/settings', [
+            'settings' => $this->getSettings(),
+            'maskedKeys' => $maskedKeys,
+            'envKeys' => $envKeys,
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeSaveSettings(): bool
     {
         // Save API keys to AISettingsService instead of plugin settings
