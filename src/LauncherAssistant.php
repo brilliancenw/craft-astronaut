@@ -139,8 +139,8 @@ class LauncherAssistant extends Plugin
             );
         }
 
-        // Extend Launcher's CP navigation with assistant sections
-        $this->extendLauncherNavigation();
+        // Register with Launcher's addon system
+        $this->registerWithLauncher();
 
         Craft::info(
             Craft::t(
@@ -153,12 +153,56 @@ class LauncherAssistant extends Plugin
     }
 
     /**
-     * Extend Launcher's CP navigation to include assistant sections
+     * Register this plugin with Launcher's addon system
      */
-    protected function extendLauncherNavigation(): void
+    protected function registerWithLauncher(): void
     {
-        // This will be implemented once the launcher extensibility system is in place
-        // For now, the admin controller routes are registered above
+        // Register as a Launcher addon
+        Event::on(
+            \brilliance\launcher\services\AddonService::class,
+            \brilliance\launcher\services\AddonService::EVENT_REGISTER_ADDONS,
+            function (\brilliance\launcher\events\RegisterAddonPluginsEvent $event) {
+                $event->registerAddon([
+                    'handle' => 'launcher-assistant',
+                    'name' => 'Assistant',
+                    'priority' => 10,
+                ]);
+            }
+        );
+
+        // Register CP navigation items
+        Event::on(
+            \brilliance\launcher\services\AddonService::class,
+            \brilliance\launcher\services\AddonService::EVENT_REGISTER_CP_NAV_ITEMS,
+            function (\brilliance\launcher\events\RegisterCpNavItemsEvent $event) {
+                $event->registerNavItem('api-config', [
+                    'label' => 'API Configuration',
+                    'url' => 'launcher/api-config',
+                ]);
+                $event->registerNavItem('brand-info', [
+                    'label' => 'Brand Information',
+                    'url' => 'launcher/brand-info',
+                ]);
+                $event->registerNavItem('guidelines', [
+                    'label' => 'Content Guidelines',
+                    'url' => 'launcher/guidelines',
+                ]);
+            }
+        );
+
+        // Register custom hotkey
+        Event::on(
+            \brilliance\launcher\services\AddonService::class,
+            \brilliance\launcher\services\AddonService::EVENT_REGISTER_HOTKEYS,
+            function (\brilliance\launcher\events\RegisterHotkeysEvent $event) {
+                $settings = $this->getSettings();
+                $event->registerHotkey(
+                    $settings->aiHotkey,
+                    'LauncherAI.open',
+                    'Open Launcher Assistant'
+                );
+            }
+        );
     }
 
     protected function createSettingsModel(): ?Model
