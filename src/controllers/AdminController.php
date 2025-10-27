@@ -25,15 +25,15 @@ class AdminController extends Controller
         $aiSettings = LauncherAssistant::$plugin->aiSettingsService->getSettings();
 
         // Get conversation stats
-        $conversationCount = \brilliance\launcher\records\AIConversationRecord::find()->count();
-        $userConversationCount = \brilliance\launcher\records\AIConversationRecord::find()
+        $conversationCount = \brilliance\launcherassistant\records\AIConversationRecord::find()->count();
+        $userConversationCount = \brilliance\launcherassistant\records\AIConversationRecord::find()
             ->where(['userId' => Craft::$app->user->id])
             ->count();
 
         // Check provider configuration
         $hasApiKey = LauncherAssistant::$plugin->aiSettingsService->hasApiKey($aiSettings->aiProvider);
 
-        return $this->renderTemplate('launcher/admin/index', [
+        return $this->renderTemplate('launcher-assistant/admin/index', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
             'conversationCount' => $conversationCount,
@@ -60,7 +60,7 @@ class AdminController extends Controller
             'gemini' => LauncherAssistant::$plugin->aiSettingsService->getMaskedApiKey('gemini'),
         ];
 
-        return $this->renderTemplate('launcher/admin/api-config', [
+        return $this->renderTemplate('launcher-assistant/admin/api-config', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
             'maskedKeys' => $maskedKeys,
@@ -78,7 +78,7 @@ class AdminController extends Controller
         $settings = LauncherAssistant::$plugin->getSettings();
         $aiSettings = LauncherAssistant::$plugin->aiSettingsService->getSettings();
 
-        return $this->renderTemplate('launcher/admin/brand-info', [
+        return $this->renderTemplate('launcher-assistant/admin/brand-info', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
             'selectedTab' => 'brand-info',
@@ -95,7 +95,7 @@ class AdminController extends Controller
         $settings = LauncherAssistant::$plugin->getSettings();
         $aiSettings = LauncherAssistant::$plugin->aiSettingsService->getSettings();
 
-        return $this->renderTemplate('launcher/admin/guidelines', [
+        return $this->renderTemplate('launcher-assistant/admin/guidelines', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
             'selectedTab' => 'guidelines',

@@ -7,7 +7,7 @@
 {% block content %}
     <form method="post" accept-charset="UTF-8">
         {{ csrfInput() }}
-        {{ actionInput('launcher/admin/save-api-config') }}
+        {{ actionInput('launcher/save-api-config') }}
         {{ redirectInput('launcher/api-config') }}
 
         <div class="readable">
@@ -145,7 +145,7 @@
             noModelsMessage.style.display = 'none';
 
             try {
-                const response = await fetch(Craft.getActionUrl('launcher/ai/models'), {
+                const response = await fetch(Craft.getActionUrl('launcher-assistant/ai/models'), {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',

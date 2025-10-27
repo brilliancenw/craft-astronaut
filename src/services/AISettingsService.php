@@ -2,7 +2,7 @@
 
 namespace brilliance\launcherassistant\services;
 
-use brilliance\launcher\records\AISettingsRecord;
+use brilliance\launcherassistant\records\AISettingsRecord;
 use Craft;
 use craft\base\Component;
 use craft\helpers\App;

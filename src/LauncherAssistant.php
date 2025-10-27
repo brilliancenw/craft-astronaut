@@ -203,6 +203,71 @@ class LauncherAssistant extends Plugin
                 );
             }
         );
+
+        // Register modal tab
+        Event::on(
+            \brilliance\launcher\services\AddonService::class,
+            \brilliance\launcher\services\AddonService::EVENT_REGISTER_MODAL_TABS,
+            function (\brilliance\launcher\events\RegisterModalTabsEvent $event) {
+                $settings = $this->getSettings();
+
+                // Generate assistant tab HTML
+                $tabHtml = $this->getAssistantTabHtml();
+
+                $event->registerTab('assistant', [
+                    'label' => 'Assistant',
+                    'hotkey' => $settings->aiHotkey,
+                    'html' => $tabHtml,
+                    'priority' => 10, // Left side (lower priority = left)
+                ]);
+            }
+        );
+    }
+
+    /**
+     * Generate the HTML for the assistant tab
+     */
+    protected function getAssistantTabHtml(): string
+    {
+        return <<<HTML
+<div class="launcher-ai-assistant-content">
+    <div id="launcher-ai-messages" class="launcher-ai-messages">
+        <div class="launcher-ai-welcome">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9 9h.01M15 9h.01M9 15a3 3 0 0 0 6 0"></path>
+            </svg>
+            <h3>Welcome to Craft AI Assistant</h3>
+            <p>I can help you create content, manage your site, and answer questions about Craft CMS.</p>
+            <div class="launcher-ai-suggestions">
+                <button class="launcher-ai-suggestion" data-prompt="Create a blog post about our latest product">
+                    Create a blog post
+                </button>
+                <button class="launcher-ai-suggestion" data-prompt="Clear all caches">
+                    Clear caches
+                </button>
+                <button class="launcher-ai-suggestion" data-prompt="What sections do I have in my site?">
+                    List my sections
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="launcher-ai-input-wrapper">
+        <textarea
+            id="launcher-ai-input"
+            class="launcher-ai-input"
+            placeholder="Ask me anything or type a command..."
+            rows="1"
+        ></textarea>
+        <button type="button" id="launcher-ai-send" class="launcher-ai-send" title="Send (Enter)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        </button>
+    </div>
+</div>
+HTML;
     }
 
     protected function createSettingsModel(): ?Model
