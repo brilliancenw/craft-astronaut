@@ -12,18 +12,11 @@
 
         <div class="readable">
             <h1>API Configuration</h1>
-            <p>Configure your AI provider and API keys.</p>
+            <p>Configure your AI provider and model settings.</p>
 
-            <div class="readable" style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                <h3 style="margin-top: 0;">API Key Security</h3>
-                <p><strong>Recommended:</strong> Store API keys in environment variables (.env file) for better security.</p>
-                <p>Environment variables are checked first and take priority over database values.</p>
-                <ul>
-                    <li><code>LAUNCHER_CLAUDE_API_KEY</code> - Claude API key</li>
-                    <li><code>LAUNCHER_OPENAI_API_KEY</code> - OpenAI API key</li>
-                    <li><code>LAUNCHER_GEMINI_API_KEY</code> - Gemini API key</li>
-                </ul>
-                <p class="light">If not set via environment variables, keys can be stored encrypted in the database using the fields below.</p>
+            <div class="readable" style="background: #eff6ff; border: 1px solid #3b82f6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                <strong>API Keys:</strong> To configure API keys, go to <a href="{{ url('settings/plugins/launcher-assistant') }}">Settings → Launcher Assistant</a>.
+                <br><small class="light">API keys are stored separately in the Settings page for security.</small>
             </div>
 
             {{ forms.selectField({
@@ -42,32 +35,7 @@
 
             <hr>
 
-            <h2>Claude (Anthropic)</h2>
-
-            {% if envKeys.claude %}
-                <div style="background: #d1fae5; border: 1px solid #10b981; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-                    <strong>Environment Variable Set:</strong> Claude API key is configured via <code>LAUNCHER_CLAUDE_API_KEY</code> environment variable.
-                    This takes priority over any database value.
-                </div>
-            {% endif %}
-
-            {{ forms.textField({
-                label: 'Claude API Key' ~ (envKeys.claude ? ' (Database Fallback)' : ''),
-                instructions: envKeys.claude
-                    ? 'Environment variable is active. This database value will only be used if the env var is removed. Current: ' ~ (maskedKeys.claude ?: 'Not set')
-                    : 'Enter your Claude API key from console.anthropic.com. Current key: ' ~ (maskedKeys.claude ?: 'Not set'),
-                id: 'claudeApiKey',
-                name: 'claudeApiKey',
-                value: '',
-                placeholder: 'sk-ant-...',
-                type: 'password',
-                autocomplete: 'off',
-                disabled: envKeys.claude
-            }) }}
-
-            {% if not envKeys.claude %}
-                <p class="light"><strong>Note:</strong> Leave blank to keep existing key. Only enter a new key if you want to update it.</p>
-            {% endif %}
+            <h2>Claude Model Selection</h2>
 
             <div id="claude-model-selector" style="margin-top: 24px;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -89,82 +57,15 @@
                 </div>
 
                 <p id="no-models-message" class="light" style="display: none; color: #dc2626;">
-                    <strong>No models available.</strong> Please configure your Claude API key and try again.
+                    <strong>No models available.</strong> Please configure your Claude API key in <a href="{{ url('settings/plugins/launcher-assistant') }}">Settings</a> and try again.
                 </p>
             </div>
-
-            <hr>
-
-            <h2>OpenAI (Coming Soon)</h2>
-
-            {% if envKeys.openai %}
-                <div style="background: #d1fae5; border: 1px solid #10b981; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-                    <strong>Environment Variable Set:</strong> OpenAI API key is configured via <code>LAUNCHER_OPENAI_API_KEY</code> environment variable.
-                    This takes priority over any database value.
-                </div>
-            {% endif %}
-
-            {{ forms.textField({
-                label: 'OpenAI API Key' ~ (envKeys.openai ? ' (Database Fallback)' : ''),
-                instructions: envKeys.openai
-                    ? 'Environment variable is active. This database value will only be used if the env var is removed. Current: ' ~ (maskedKeys.openai ?: 'Not set')
-                    : 'OpenAI provider support coming soon. Current key: ' ~ (maskedKeys.openai ?: 'Not set'),
-                id: 'openaiApiKey',
-                name: 'openaiApiKey',
-                value: '',
-                placeholder: 'sk-...',
-                type: 'password',
-                disabled: true,
-                autocomplete: 'off'
-            }) }}
-
-            <hr>
-
-            <h2>Gemini (Google - Coming Soon)</h2>
-
-            {% if envKeys.gemini %}
-                <div style="background: #d1fae5; border: 1px solid #10b981; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-                    <strong>Environment Variable Set:</strong> Gemini API key is configured via <code>LAUNCHER_GEMINI_API_KEY</code> environment variable.
-                    This takes priority over any database value.
-                </div>
-            {% endif %}
-
-            {{ forms.textField({
-                label: 'Gemini API Key' ~ (envKeys.gemini ? ' (Database Fallback)' : ''),
-                instructions: envKeys.gemini
-                    ? 'Environment variable is active. This database value will only be used if the env var is removed. Current: ' ~ (maskedKeys.gemini ?: 'Not set')
-                    : 'Gemini provider support coming soon. Current key: ' ~ (maskedKeys.gemini ?: 'Not set'),
-                id: 'geminiApiKey',
-                name: 'geminiApiKey',
-                value: '',
-                placeholder: 'AI...',
-                type: 'password',
-                disabled: true,
-                autocomplete: 'off'
-            }) }}
         </div>
 
         <div class="buttons">
-            <button type="submit" class="btn submit">Save API Configuration</button>
+            <button type="submit" class="btn submit">Save Configuration</button>
         </div>
     </form>
-
-    <hr>
-
-    <div class="readable">
-        <h2>Getting API Keys</h2>
-
-        <h3>Claude (Anthropic)</h3>
-        <ol>
-            <li>Visit <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a></li>
-            <li>Sign up or log in to your account</li>
-            <li>Navigate to API Keys section</li>
-            <li>Create a new API key</li>
-            <li>Copy and paste it above</li>
-        </ol>
-
-        <p><strong>Pricing:</strong> Claude API uses a pay-as-you-go model. Visit <a href="https://www.anthropic.com/pricing" target="_blank" rel="noopener">anthropic.com/pricing</a> for current rates.</p>
-    </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -234,7 +135,7 @@
         });
 
         // Auto-fetch models if API key is configured
-        {% if maskedKeys.claude %}
+        {% if craft.app.plugins.getPlugin('launcher-assistant').aiSettingsService.hasApiKey('claude') %}
             fetchBtn.click();
         {% endif %}
     });

@@ -26,8 +26,8 @@ class LauncherAssistant extends Plugin
 {
     public static ?LauncherAssistant $plugin = null;
     public string $schemaVersion = '1.0.0';
-    public bool $hasCpSettings = false; // Settings managed through Launcher CP section
-    public bool $hasCpSection = false;  // Uses Launcher's CP section
+    public bool $hasCpSettings = true;  // Settings page for API keys only
+    public bool $hasCpSection = false;  // Uses Launcher's CP section for other settings
 
     public static function config(): array
     {
@@ -273,6 +273,35 @@ HTML;
     protected function createSettingsModel(): ?Model
     {
         return new Settings();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSaveSettings(): bool
+    {
+        // Save API keys to AISettingsService instead of plugin settings
+        $request = Craft::$app->getRequest();
+
+        $attributes = [];
+
+        // Only update API keys if they're provided (not empty)
+        if ($claudeKey = $request->getBodyParam('claudeApiKey')) {
+            $attributes['claudeApiKey'] = $claudeKey;
+        }
+        if ($openaiKey = $request->getBodyParam('openaiApiKey')) {
+            $attributes['openaiApiKey'] = $openaiKey;
+        }
+        if ($geminiKey = $request->getBodyParam('geminiApiKey')) {
+            $attributes['geminiApiKey'] = $geminiKey;
+        }
+
+        // Save to AISettingsService if any keys were provided
+        if (!empty($attributes)) {
+            $this->aiSettingsService->saveSettings($attributes);
+        }
+
+        return parent::beforeSaveSettings();
     }
 
     /**

@@ -53,25 +53,9 @@ class AdminController extends Controller
         $settings = LauncherAssistant::$plugin->getSettings();
         $aiSettings = LauncherAssistant::$plugin->aiSettingsService->getSettings();
 
-        // Get masked API keys for display
-        $maskedKeys = [
-            'claude' => LauncherAssistant::$plugin->aiSettingsService->getMaskedApiKey('claude'),
-            'openai' => LauncherAssistant::$plugin->aiSettingsService->getMaskedApiKey('openai'),
-            'gemini' => LauncherAssistant::$plugin->aiSettingsService->getMaskedApiKey('gemini'),
-        ];
-
-        // Check which keys are set via environment variables
-        $envKeys = [
-            'claude' => LauncherAssistant::$plugin->aiSettingsService->hasEnvApiKey('claude'),
-            'openai' => LauncherAssistant::$plugin->aiSettingsService->hasEnvApiKey('openai'),
-            'gemini' => LauncherAssistant::$plugin->aiSettingsService->hasEnvApiKey('gemini'),
-        ];
-
         return $this->renderTemplate('launcher-assistant/admin/api-config', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
-            'maskedKeys' => $maskedKeys,
-            'envKeys' => $envKeys,
             'selectedTab' => 'api-config',
         ]);
     }
