@@ -57,8 +57,6 @@ composer require brilliance/craft-launcher-assistant
 php craft plugin/install launcher-assistant
 ```
 
-**Note:** A valid license key is required to use Launcher Assistant in production. Purchase a license at [brilliancenw.com](https://www.brilliancenw.com/).
-
 ## Configuration
 
 After installation, configure the Assistant through the Craft admin panel:
