@@ -26,8 +26,8 @@ class LauncherAssistant extends Plugin
 {
     public static ?LauncherAssistant $plugin = null;
     public string $schemaVersion = '1.0.0';
-    public bool $hasCpSettings = false; // Settings managed through Launcher CP section
-    public bool $hasCpSection = false;  // Uses Launcher's CP section
+    public bool $hasCpSettings = true;
+    public bool $hasCpSection = false;
 
     public static function config(): array
     {
@@ -77,16 +77,16 @@ class LauncherAssistant extends Plugin
                 $event->rules['GET launcher-assistant/ai/validate'] = 'launcher-assistant/ai/validate';
                 $event->rules['GET launcher-assistant/ai/models'] = 'launcher-assistant/ai/models';
 
-                // Admin panel routes - integrate with Launcher's CP section
-                $event->rules['launcher/api-config'] = 'launcher-assistant/admin/api-config';
-                $event->rules['launcher/brand-info'] = 'launcher-assistant/admin/brand-info';
-                $event->rules['launcher/guidelines'] = 'launcher-assistant/admin/guidelines';
+                // Admin panel routes for settings
+                $event->rules['launcher-assistant/api-config'] = 'launcher-assistant/admin/api-config';
+                $event->rules['launcher-assistant/brand-info'] = 'launcher-assistant/admin/brand-info';
+                $event->rules['launcher-assistant/guidelines'] = 'launcher-assistant/admin/guidelines';
 
                 // Admin panel save actions
-                $event->rules['POST launcher/save-api-config'] = 'launcher-assistant/admin/save-api-config';
-                $event->rules['POST launcher/save-brand-info'] = 'launcher-assistant/admin/save-brand-info';
-                $event->rules['POST launcher/save-guidelines'] = 'launcher-assistant/admin/save-guidelines';
-                $event->rules['POST launcher/validate-key'] = 'launcher-assistant/admin/validate-key';
+                $event->rules['POST launcher-assistant/save-api-config'] = 'launcher-assistant/admin/save-api-config';
+                $event->rules['POST launcher-assistant/save-brand-info'] = 'launcher-assistant/admin/save-brand-info';
+                $event->rules['POST launcher-assistant/save-guidelines'] = 'launcher-assistant/admin/save-guidelines';
+                $event->rules['POST launcher-assistant/validate-key'] = 'launcher-assistant/admin/validate-key';
             }
         );
 
@@ -170,25 +170,7 @@ class LauncherAssistant extends Plugin
             }
         );
 
-        // Register CP navigation items
-        Event::on(
-            \brilliance\launcher\services\AddonService::class,
-            \brilliance\launcher\services\AddonService::EVENT_REGISTER_CP_NAV_ITEMS,
-            function (\brilliance\launcher\events\RegisterCpNavItemsEvent $event) {
-                $event->registerNavItem('api-config', [
-                    'label' => 'API Configuration',
-                    'url' => 'launcher/api-config',
-                ]);
-                $event->registerNavItem('brand-info', [
-                    'label' => 'Brand Information',
-                    'url' => 'launcher/brand-info',
-                ]);
-                $event->registerNavItem('guidelines', [
-                    'label' => 'Content Guidelines',
-                    'url' => 'launcher/guidelines',
-                ]);
-            }
-        );
+        // CP navigation items removed - now using plugin's own settings panel
 
         // Register custom hotkey
         Event::on(
@@ -273,6 +255,15 @@ HTML;
     protected function createSettingsModel(): ?Model
     {
         return new Settings();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsResponse(): mixed
+    {
+        // Redirect to the API config tab by default
+        return Craft::$app->getResponse()->redirect('launcher-assistant/api-config');
     }
 
     /**

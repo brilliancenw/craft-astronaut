@@ -10,10 +10,21 @@ use yii\web\Response;
 /**
  * Admin Controller
  *
- * Handles the Launcher admin panel CP section
+ * Handles the Launcher Assistant settings panel
  */
 class AdminController extends Controller
 {
+    /**
+     * Get subnav items for the settings tabs
+     */
+    protected function getSubnav(): array
+    {
+        return [
+            'api-config' => ['label' => 'API Configuration', 'url' => 'launcher-assistant/api-config'],
+            'brand-info' => ['label' => 'Brand Information', 'url' => 'launcher-assistant/brand-info'],
+            'guidelines' => ['label' => 'Content Guidelines', 'url' => 'launcher-assistant/guidelines'],
+        ];
+    }
     /**
      * Dashboard/Index
      */
@@ -60,11 +71,20 @@ class AdminController extends Controller
             'gemini' => LauncherAssistant::$plugin->aiSettingsService->getMaskedApiKey('gemini'),
         ];
 
+        // Check which keys are set via environment variables
+        $envKeys = [
+            'claude' => LauncherAssistant::$plugin->aiSettingsService->hasEnvApiKey('claude'),
+            'openai' => LauncherAssistant::$plugin->aiSettingsService->hasEnvApiKey('openai'),
+            'gemini' => LauncherAssistant::$plugin->aiSettingsService->hasEnvApiKey('gemini'),
+        ];
+
         return $this->renderTemplate('launcher-assistant/admin/api-config', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
             'maskedKeys' => $maskedKeys,
-            'selectedTab' => 'api-config',
+            'envKeys' => $envKeys,
+            'selectedSubnavItem' => 'api-config',
+            'subnav' => $this->getSubnav(),
         ]);
     }
 
@@ -81,7 +101,8 @@ class AdminController extends Controller
         return $this->renderTemplate('launcher-assistant/admin/brand-info', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
-            'selectedTab' => 'brand-info',
+            'selectedSubnavItem' => 'brand-info',
+            'subnav' => $this->getSubnav(),
         ]);
     }
 
@@ -98,7 +119,8 @@ class AdminController extends Controller
         return $this->renderTemplate('launcher-assistant/admin/guidelines', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
-            'selectedTab' => 'guidelines',
+            'selectedSubnavItem' => 'guidelines',
+            'subnav' => $this->getSubnav(),
         ]);
     }
 

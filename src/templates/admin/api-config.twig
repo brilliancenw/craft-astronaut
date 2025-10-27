@@ -1,18 +1,30 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
-{% set title = "API Configuration" %}
-{% set selectedSubnavItem = selectedTab %}
+{% set title = "Launcher Assistant" %}
+{% set fullPageForm = true %}
 
 {% block content %}
     <form method="post" accept-charset="UTF-8">
         {{ csrfInput() }}
         {{ actionInput('launcher-assistant/admin/save-api-config') }}
-        {{ redirectInput('launcher/api-config') }}
+        {{ redirectInput('launcher-assistant/api-config') }}
 
         <div class="readable">
             <h1>API Configuration</h1>
-            <p>Configure your AI provider and API keys. API keys are encrypted and stored securely in the database.</p>
+            <p>Configure your AI provider and API keys.</p>
+
+            <div class="readable" style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                <h3 style="margin-top: 0;">API Key Security</h3>
+                <p><strong>Recommended:</strong> Store API keys in environment variables (.env file) for better security.</p>
+                <p>Environment variables are checked first and take priority over database values.</p>
+                <ul>
+                    <li><code>LAUNCHER_CLAUDE_API_KEY</code> - Claude API key</li>
+                    <li><code>LAUNCHER_OPENAI_API_KEY</code> - OpenAI API key</li>
+                    <li><code>LAUNCHER_GEMINI_API_KEY</code> - Gemini API key</li>
+                </ul>
+                <p class="light">If not set via environment variables, keys can be stored encrypted in the database using the fields below.</p>
+            </div>
 
             {{ forms.selectField({
                 label: 'AI Provider',
@@ -32,18 +44,30 @@
 
             <h2>Claude (Anthropic)</h2>
 
+            {% if envKeys.claude %}
+                <div style="background: #d1fae5; border: 1px solid #10b981; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+                    <strong>Environment Variable Set:</strong> Claude API key is configured via <code>LAUNCHER_CLAUDE_API_KEY</code> environment variable.
+                    This takes priority over any database value.
+                </div>
+            {% endif %}
+
             {{ forms.textField({
-                label: 'Claude API Key',
-                instructions: 'Enter your Claude API key from console.anthropic.com. Current key: ' ~ (maskedKeys.claude ?: 'Not set'),
+                label: 'Claude API Key' ~ (envKeys.claude ? ' (Database Fallback)' : ''),
+                instructions: envKeys.claude
+                    ? 'Environment variable is active. This database value will only be used if the env var is removed. Current: ' ~ (maskedKeys.claude ?: 'Not set')
+                    : 'Enter your Claude API key from console.anthropic.com. Current key: ' ~ (maskedKeys.claude ?: 'Not set'),
                 id: 'claudeApiKey',
                 name: 'claudeApiKey',
                 value: '',
                 placeholder: 'sk-ant-...',
                 type: 'password',
-                autocomplete: 'off'
+                autocomplete: 'off',
+                disabled: envKeys.claude
             }) }}
 
-            <p class="light"><strong>Note:</strong> Leave blank to keep existing key. Only enter a new key if you want to update it.</p>
+            {% if not envKeys.claude %}
+                <p class="light"><strong>Note:</strong> Leave blank to keep existing key. Only enter a new key if you want to update it.</p>
+            {% endif %}
 
             <div id="claude-model-selector" style="margin-top: 24px;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -73,9 +97,18 @@
 
             <h2>OpenAI (Coming Soon)</h2>
 
+            {% if envKeys.openai %}
+                <div style="background: #d1fae5; border: 1px solid #10b981; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+                    <strong>Environment Variable Set:</strong> OpenAI API key is configured via <code>LAUNCHER_OPENAI_API_KEY</code> environment variable.
+                    This takes priority over any database value.
+                </div>
+            {% endif %}
+
             {{ forms.textField({
-                label: 'OpenAI API Key',
-                instructions: 'OpenAI provider support coming soon. Current key: ' ~ (maskedKeys.openai ?: 'Not set'),
+                label: 'OpenAI API Key' ~ (envKeys.openai ? ' (Database Fallback)' : ''),
+                instructions: envKeys.openai
+                    ? 'Environment variable is active. This database value will only be used if the env var is removed. Current: ' ~ (maskedKeys.openai ?: 'Not set')
+                    : 'OpenAI provider support coming soon. Current key: ' ~ (maskedKeys.openai ?: 'Not set'),
                 id: 'openaiApiKey',
                 name: 'openaiApiKey',
                 value: '',
@@ -89,9 +122,18 @@
 
             <h2>Gemini (Google - Coming Soon)</h2>
 
+            {% if envKeys.gemini %}
+                <div style="background: #d1fae5; border: 1px solid #10b981; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+                    <strong>Environment Variable Set:</strong> Gemini API key is configured via <code>LAUNCHER_GEMINI_API_KEY</code> environment variable.
+                    This takes priority over any database value.
+                </div>
+            {% endif %}
+
             {{ forms.textField({
-                label: 'Gemini API Key',
-                instructions: 'Gemini provider support coming soon. Current key: ' ~ (maskedKeys.gemini ?: 'Not set'),
+                label: 'Gemini API Key' ~ (envKeys.gemini ? ' (Database Fallback)' : ''),
+                instructions: envKeys.gemini
+                    ? 'Environment variable is active. This database value will only be used if the env var is removed. Current: ' ~ (maskedKeys.gemini ?: 'Not set')
+                    : 'Gemini provider support coming soon. Current key: ' ~ (maskedKeys.gemini ?: 'Not set'),
                 id: 'geminiApiKey',
                 name: 'geminiApiKey',
                 value: '',

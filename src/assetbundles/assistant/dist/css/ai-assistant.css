@@ -5,13 +5,17 @@
     min-height: 0 !important;
 }
 
-/* Ensure assistant tab content fills available space */
+/* Ensure assistant tab content fills available space when visible */
 #launcher-assistant-tab {
-    display: flex !important;
     flex-direction: column;
     flex: 1;
     min-height: 0;
     position: relative;
+}
+
+/* Only apply flex display when the tab is actually shown (not hidden) */
+#launcher-assistant-tab:not([style*="display: none"]) {
+    display: flex !important;
 }
 
 .launcher-ai-assistant-content {

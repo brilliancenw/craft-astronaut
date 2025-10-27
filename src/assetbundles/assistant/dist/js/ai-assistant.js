@@ -77,6 +77,11 @@
             // Listen for tab changes to start conversation when assistant tab is opened
             document.addEventListener('launcherTabChanged', function(e) {
                 if (e.detail && e.detail.tab === 'assistant') {
+                    // Focus input and scroll to bottom
+                    self.focusInput();
+                    self.scrollToBottom();
+
+                    // Start conversation if needed
                     if (!self.currentThreadId) {
                         self.startConversation();
                     }
@@ -372,6 +377,20 @@
             setTimeout(function() {
                 errorEl.remove();
             }, 5000);
+        },
+
+        scrollToBottom: function() {
+            if (this.messagesContainer) {
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            }
+        },
+
+        focusInput: function() {
+            if (this.messageInput) {
+                setTimeout(() => {
+                    this.messageInput.focus();
+                }, 100);
+            }
         },
     };
 })();

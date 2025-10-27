@@ -55,9 +55,31 @@ class AISettingsService extends Component
 
     /**
      * Get decrypted API key for a provider
+     *
+     * Checks environment variables first, then falls back to database.
+     * This allows sensitive API keys to be stored securely in .env files
+     * rather than in the database.
+     *
+     * Environment variables:
+     * - LAUNCHER_CLAUDE_API_KEY
+     * - LAUNCHER_OPENAI_API_KEY
+     * - LAUNCHER_GEMINI_API_KEY
      */
     public function getApiKey(string $provider): ?string
     {
+        // Check environment variables first (more secure)
+        $envKey = match ($provider) {
+            'claude' => App::env('LAUNCHER_CLAUDE_API_KEY'),
+            'openai' => App::env('LAUNCHER_OPENAI_API_KEY'),
+            'gemini' => App::env('LAUNCHER_GEMINI_API_KEY'),
+            default => null,
+        };
+
+        if ($envKey) {
+            return $envKey;
+        }
+
+        // Fall back to database (encrypted storage)
         $settings = $this->getSettings();
 
         $encrypted = match ($provider) {
@@ -99,6 +121,21 @@ class AISettingsService extends Component
     public function hasApiKey(string $provider): bool
     {
         return !empty($this->getApiKey($provider));
+    }
+
+    /**
+     * Check if an API key is set via environment variable
+     */
+    public function hasEnvApiKey(string $provider): bool
+    {
+        $envKey = match ($provider) {
+            'claude' => App::env('LAUNCHER_CLAUDE_API_KEY'),
+            'openai' => App::env('LAUNCHER_OPENAI_API_KEY'),
+            'gemini' => App::env('LAUNCHER_GEMINI_API_KEY'),
+            default => null,
+        };
+
+        return !empty($envKey);
     }
 
     /**
