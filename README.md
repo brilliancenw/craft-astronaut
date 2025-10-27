@@ -170,7 +170,7 @@ For the best support experience:
 
 ## Credits
 
-Developed by [Brilliance](https://www.brilliancenw.com/) - Craft CMS experts since 2015.
+Developed by [Brilliance](https://www.brilliancenw.com/) - Craft CMS experts.
 
 ---
 
