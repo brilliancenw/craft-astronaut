@@ -10,21 +10,10 @@ use yii\web\Response;
 /**
  * Admin Controller
  *
- * Handles the Launcher Assistant settings panel
+ * Handles the Launcher admin panel CP section
  */
 class AdminController extends Controller
 {
-    /**
-     * Get subnav items for the settings tabs
-     */
-    protected function getSubnav(): array
-    {
-        return [
-            'api-config' => ['label' => 'API Configuration', 'url' => 'launcher-assistant/api-config'],
-            'brand-info' => ['label' => 'Brand Information', 'url' => 'launcher-assistant/brand-info'],
-            'guidelines' => ['label' => 'Content Guidelines', 'url' => 'launcher-assistant/guidelines'],
-        ];
-    }
     /**
      * Dashboard/Index
      */
@@ -83,8 +72,7 @@ class AdminController extends Controller
             'aiSettings' => $aiSettings,
             'maskedKeys' => $maskedKeys,
             'envKeys' => $envKeys,
-            'selectedSubnavItem' => 'api-config',
-            'subnav' => $this->getSubnav(),
+            'selectedTab' => 'api-config',
         ]);
     }
 
@@ -101,8 +89,7 @@ class AdminController extends Controller
         return $this->renderTemplate('launcher-assistant/admin/brand-info', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
-            'selectedSubnavItem' => 'brand-info',
-            'subnav' => $this->getSubnav(),
+            'selectedTab' => 'brand-info',
         ]);
     }
 
@@ -119,8 +106,7 @@ class AdminController extends Controller
         return $this->renderTemplate('launcher-assistant/admin/guidelines', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
-            'selectedSubnavItem' => 'guidelines',
-            'subnav' => $this->getSubnav(),
+            'selectedTab' => 'guidelines',
         ]);
     }
 
