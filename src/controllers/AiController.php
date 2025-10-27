@@ -2,6 +2,7 @@
 
 namespace brilliance\launcherassistant\controllers;
 
+use brilliance\launcherassistant\ai\AIProviderFactory;
 use brilliance\launcherassistant\LauncherAssistant;
 use Craft;
 use craft\web\Controller;
@@ -283,7 +284,7 @@ class AiController extends Controller
 
         try {
             $settings = LauncherAssistant::$plugin->getSettings();
-            $provider = \brilliance\launcher\ai\AIProviderFactory::create();
+            $provider = AIProviderFactory::create();
 
             if (!$provider) {
                 return $this->asJson([
@@ -320,7 +321,7 @@ class AiController extends Controller
         $this->requireAcceptsJson();
 
         try {
-            $provider = \brilliance\launcher\ai\AIProviderFactory::create();
+            $provider = AIProviderFactory::create();
 
             if (!$provider) {
                 return $this->asJson([

@@ -219,7 +219,7 @@ class AdminController extends Controller
 
         // Temporarily create provider with this key to validate
         $providerInstance = match ($provider) {
-            'claude' => new \brilliance\launcher\ai\providers\ClaudeProvider($apiKey),
+            'claude' => new \brilliance\launcherassistant\ai\providers\ClaudeProvider($apiKey),
             default => null,
         };
 

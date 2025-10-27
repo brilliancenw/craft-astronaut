@@ -1,7 +1,22 @@
 /* Launcher Assistant Tab Styles - Matches Launcher Design System */
 
+/* Fix flexbox scrolling for ALL tab content (not just assistant) */
+.launcher-tab-content {
+    min-height: 0 !important;
+}
+
+/* Ensure assistant tab content fills available space */
+#launcher-assistant-tab {
+    display: flex !important;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
 .launcher-ai-assistant-content {
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -9,6 +24,7 @@
 
 .launcher-ai-messages {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 20px;
     background: #fff;
@@ -71,6 +87,11 @@
     align-items: flex-start;
 }
 
+.launcher-ai-message.launcher-ai-message-user {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+}
+
 .launcher-ai-message-avatar {
     width: 32px;
     height: 32px;
@@ -82,9 +103,9 @@
     font-size: 16px;
 }
 
-.launcher-ai-message.user .launcher-ai-message-avatar {
-    background: var(--ui-control-color, #0d78f2);
-    color: white;
+.launcher-ai-message.launcher-ai-message-user .launcher-ai-message-avatar {
+    background: #D0D0D0;
+    color: var(--text-color, #3f4d5a);
 }
 
 .launcher-ai-message.assistant .launcher-ai-message-avatar {
@@ -98,13 +119,15 @@
     line-height: 1.6;
     color: var(--text-color, #3f4d5a);
     font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif);
+    max-width: 85%;
 }
 
-.launcher-ai-message.user .launcher-ai-message-content {
-    background: var(--gray-050, #fafafa);
+.launcher-ai-message.launcher-ai-message-user .launcher-ai-message-content {
+    background: #EFEFEF;
+    color: var(--text-color, #3f4d5a);
     padding: 12px 16px;
     border-radius: var(--border-radius, 4px);
-    border: 1px solid var(--hairline-color, #e3e5e8);
+    max-width: 80%;
 }
 
 .launcher-ai-message-content p {
@@ -113,6 +136,85 @@
 
 .launcher-ai-message-content p:last-child {
     margin-bottom: 0;
+}
+
+.launcher-ai-message-content ul,
+.launcher-ai-message-content ol {
+    margin: 12px 0;
+    padding-left: 24px;
+}
+
+.launcher-ai-message-content ul:first-child,
+.launcher-ai-message-content ol:first-child {
+    margin-top: 0;
+}
+
+.launcher-ai-message-content ul:last-child,
+.launcher-ai-message-content ol:last-child {
+    margin-bottom: 0;
+}
+
+.launcher-ai-message-content li {
+    margin: 6px 0;
+    line-height: 1.6;
+}
+
+.launcher-ai-message-content ul {
+    list-style-type: disc;
+}
+
+.launcher-ai-message-content ol {
+    list-style-type: decimal;
+}
+
+.launcher-ai-message-content h1,
+.launcher-ai-message-content h2,
+.launcher-ai-message-content h3 {
+    margin: 16px 0 8px 0;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.launcher-ai-message-content h1:first-child,
+.launcher-ai-message-content h2:first-child,
+.launcher-ai-message-content h3:first-child {
+    margin-top: 0;
+}
+
+.launcher-ai-message-content h1 {
+    font-size: 20px;
+}
+
+.launcher-ai-message-content h2 {
+    font-size: 18px;
+}
+
+.launcher-ai-message-content h3 {
+    font-size: 16px;
+}
+
+.launcher-ai-message-content a {
+    color: var(--ui-control-color, #0d78f2);
+    text-decoration: none;
+}
+
+.launcher-ai-message-content a:hover {
+    text-decoration: underline;
+}
+
+.launcher-ai-message-content strong {
+    font-weight: 600;
+}
+
+.launcher-ai-message-content em {
+    font-style: italic;
+}
+
+.launcher-ai-message-content blockquote {
+    margin: 12px 0;
+    padding-left: 16px;
+    border-left: 3px solid var(--hairline-color, #e3e5e8);
+    color: var(--light-text-color, #8b92a1);
 }
 
 .launcher-ai-message-content code {
@@ -144,7 +246,7 @@
     padding: 8px 0;
 }
 
-.launcher-ai-typing-dot {
+.launcher-ai-typing span {
     width: 8px;
     height: 8px;
     background: var(--light-text-color, #8b92a1);
@@ -152,11 +254,11 @@
     animation: launcher-ai-typing-animation 1.4s infinite;
 }
 
-.launcher-ai-typing-dot:nth-child(2) {
+.launcher-ai-typing span:nth-child(2) {
     animation-delay: 0.2s;
 }
 
-.launcher-ai-typing-dot:nth-child(3) {
+.launcher-ai-typing span:nth-child(3) {
     animation-delay: 0.4s;
 }
 
@@ -172,6 +274,7 @@
 }
 
 .launcher-ai-input-wrapper {
+    flex-shrink: 0;
     display: flex;
     align-items: flex-end;
     gap: 10px;

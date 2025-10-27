@@ -160,7 +160,7 @@ Format your responses using HTML for better readability. Use these tags:
 - <strong> for important terms and emphasis
 - <h2>, <h3> for headings to organize information
 - <ul><li> for bullet lists
-- <ol><li> for numbered/sequential lists
+- <ol><li> for numbered lists
 - <a href="url"> for links to Craft admin URLs
 - <code> for field handles and technical terms
 - <p> for paragraphs
@@ -178,6 +178,8 @@ Examples:
 <li><strong>title</strong> - The entry title</li>
 <li><strong>bodyContent</strong> - Main content area</li>
 </ol>"
+
+Keep responses clear and conversational. Use formatting to improve readability.
 
 # Brand Voice and Guidelines
 

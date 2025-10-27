@@ -52,7 +52,11 @@ class AIConversationService extends Component
             $conversation->title = 'New Conversation';
             $conversation->lastMessageAt = DateTimeHelper::currentUTCDateTime();
             $conversation->messageCount = 0;
-            $conversation->save();
+
+            if (!$conversation->save()) {
+                Craft::error('Failed to save conversation: ' . json_encode($conversation->getErrors()), __METHOD__);
+                return null;
+            }
         }
 
         return $conversation;
@@ -68,14 +72,25 @@ class AIConversationService extends Component
 
     /**
      * Get conversation messages
+     *
+     * @param int $conversationId The conversation ID
+     * @param int|null $limit Maximum number of messages to return
+     * @param bool $includeToolMessages Whether to include internal tool messages (for AI context)
      */
-    public function getMessages(int $conversationId, ?int $limit = null): array
+    public function getMessages(int $conversationId, ?int $limit = null, bool $includeToolMessages = false): array
     {
         $settings = LauncherAssistant::$plugin->getSettings();
         $limit = $limit ?? $settings->maxAIConversationHistory;
 
-        $records = AIMessageRecord::find()
-            ->where(['conversationId' => $conversationId])
+        $query = AIMessageRecord::find()
+            ->where(['conversationId' => $conversationId]);
+
+        // Filter out tool messages unless explicitly requested
+        if (!$includeToolMessages) {
+            $query->andWhere(['!=', 'role', 'tool']);
+        }
+
+        $records = $query
             ->orderBy(['dateCreated' => SORT_DESC])
             ->limit($limit)
             ->all();
@@ -85,6 +100,11 @@ class AIConversationService extends Component
 
         $messages = [];
         foreach ($records as $record) {
+            // Skip assistant messages with empty content (these are just tool call messages)
+            if ($record->role === 'assistant' && empty($record->content) && !$includeToolMessages) {
+                continue;
+            }
+
             $messages[] = [
                 'id' => $record->id,
                 'role' => $record->role,
@@ -306,14 +326,18 @@ class AIConversationService extends Component
         string $content,
         ?array $toolCalls = null,
         ?array $toolResults = null
-    ): AIMessageRecord {
+    ): ?AIMessageRecord {
         $message = new AIMessageRecord();
         $message->conversationId = $conversationId;
         $message->role = $role;
         $message->content = $content;
         $message->toolCalls = $toolCalls;
         $message->toolResults = $toolResults;
-        $message->save();
+
+        if (!$message->save()) {
+            Craft::error('Failed to save message: ' . json_encode($message->getErrors()), __METHOD__);
+            return null;
+        }
 
         return $message;
     }
@@ -335,7 +359,7 @@ class AIConversationService extends Component
     /**
      * Create a new conversation
      */
-    public function createConversation(?int $userId = null): AIConversationRecord
+    public function createConversation(?int $userId = null): ?AIConversationRecord
     {
         $userId = $userId ?? Craft::$app->user->id;
         $settings = LauncherAssistant::$plugin->getSettings();
@@ -347,7 +371,11 @@ class AIConversationService extends Component
         $conversation->title = 'New Conversation';
         $conversation->lastMessageAt = DateTimeHelper::currentUTCDateTime();
         $conversation->messageCount = 0;
-        $conversation->save();
+
+        if (!$conversation->save()) {
+            Craft::error('Failed to create conversation: ' . json_encode($conversation->getErrors()), __METHOD__);
+            return null;
+        }
 
         return $conversation;
     }

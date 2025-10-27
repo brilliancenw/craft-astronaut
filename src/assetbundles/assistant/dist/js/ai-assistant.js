@@ -219,18 +219,20 @@
             messageEl.className = `launcher-ai-message launcher-ai-message-${role}`;
 
             const avatar = document.createElement('div');
-            avatar.className = 'launcher-ai-avatar';
+            avatar.className = 'launcher-ai-message-avatar';
             avatar.innerHTML = role === 'user'
                 ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>'
                 : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>';
 
             const bubble = document.createElement('div');
-            bubble.className = 'launcher-ai-bubble';
+            bubble.className = 'launcher-ai-message-content';
 
-            // Format content with basic markdown support
+            // Format content
             if (role === 'assistant') {
-                bubble.innerHTML = this.formatMarkdown(content);
+                // AI responses are HTML from a trusted source, render directly
+                bubble.innerHTML = this.sanitizeHtml(content);
             } else {
+                // User messages are plain text, escape for safety
                 bubble.textContent = content;
             }
 
@@ -242,55 +244,96 @@
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
         },
 
-        formatMarkdown: function(text) {
-            if (!text) return '';
+        sanitizeHtml: function(html) {
+            if (!html) return '';
 
-            // Escape HTML to prevent XSS
-            let html = text
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
+            // Create a temporary div to parse HTML
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
 
-            // Headers (must be at start of line)
-            html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
-            html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
-            html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+            // List of allowed tags
+            const allowedTags = ['P', 'BR', 'STRONG', 'EM', 'B', 'I', 'U', 'CODE', 'PRE',
+                               'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+                               'UL', 'OL', 'LI', 'A', 'SPAN', 'DIV', 'BLOCKQUOTE'];
 
-            // Bold
-            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-            html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+            // List of allowed attributes
+            const allowedAttributes = {
+                'A': ['href', 'target', 'rel'],
+                'SPAN': ['class'],
+                'DIV': ['class']
+            };
 
-            // Italic
-            html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-            html = html.replace(/_(.+?)_/g, '<em>$1</em>');
-
-            // Code blocks
-            html = html.replace(/```([\s\S]+?)```/g, '<pre><code>$1</code></pre>');
-
-            // Inline code
-            html = html.replace(/`(.+?)`/g, '<code>$1</code>');
-
-            // Unordered lists (lines starting with -, *, or +)
-            html = html.replace(/^[*+-] (.+)$/gm, '<li>$1</li>');
-            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-
-            // Ordered lists (lines starting with numbers)
-            html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
-
-            // Links [text](url)
-            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-
-            // Line breaks - convert double newlines to paragraphs
-            const paragraphs = html.split(/\n\n+/);
-            html = paragraphs.map(p => {
-                // Don't wrap if already wrapped in a block element
-                if (p.match(/^<(h[1-6]|ul|ol|pre|blockquote)/)) {
-                    return p;
+            // Recursive function to sanitize nodes
+            const sanitizeNode = (node) => {
+                // If it's a text node, return it as-is
+                if (node.nodeType === Node.TEXT_NODE) {
+                    return node.cloneNode();
                 }
-                return '<p>' + p.replace(/\n/g, '<br>') + '</p>';
-            }).join('');
 
-            return html;
+                // If it's an element node
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const tagName = node.tagName.toUpperCase();
+
+                    // If tag is not allowed, return its children
+                    if (!allowedTags.includes(tagName)) {
+                        const fragment = document.createDocumentFragment();
+                        Array.from(node.childNodes).forEach(child => {
+                            const sanitized = sanitizeNode(child);
+                            if (sanitized) fragment.appendChild(sanitized);
+                        });
+                        return fragment;
+                    }
+
+                    // Create clean element
+                    const cleanElement = document.createElement(node.tagName);
+
+                    // Copy allowed attributes
+                    if (allowedAttributes[tagName]) {
+                        allowedAttributes[tagName].forEach(attr => {
+                            if (node.hasAttribute(attr)) {
+                                let value = node.getAttribute(attr);
+
+                                // Extra sanitization for href
+                                if (attr === 'href') {
+                                    // Only allow http, https, and relative URLs
+                                    if (!value.match(/^(https?:\/\/|\/)/i)) {
+                                        return; // Skip this attribute
+                                    }
+                                    // Ensure target="_blank" for external links
+                                    if (value.match(/^https?:\/\//i)) {
+                                        cleanElement.setAttribute('target', '_blank');
+                                        cleanElement.setAttribute('rel', 'noopener noreferrer');
+                                    }
+                                }
+
+                                cleanElement.setAttribute(attr, value);
+                            }
+                        });
+                    }
+
+                    // Recursively sanitize children
+                    Array.from(node.childNodes).forEach(child => {
+                        const sanitized = sanitizeNode(child);
+                        if (sanitized) cleanElement.appendChild(sanitized);
+                    });
+
+                    return cleanElement;
+                }
+
+                return null;
+            };
+
+            // Sanitize all child nodes
+            const sanitizedFragment = document.createDocumentFragment();
+            Array.from(temp.childNodes).forEach(node => {
+                const sanitized = sanitizeNode(node);
+                if (sanitized) sanitizedFragment.appendChild(sanitized);
+            });
+
+            // Convert back to HTML string
+            const sanitizedDiv = document.createElement('div');
+            sanitizedDiv.appendChild(sanitizedFragment);
+            return sanitizedDiv.innerHTML;
         },
 
         showTyping: function() {
@@ -299,10 +342,10 @@
             typingEl.id = typingId;
             typingEl.className = 'launcher-ai-message launcher-ai-message-assistant';
             typingEl.innerHTML = `
-                <div class="launcher-ai-avatar">
+                <div class="launcher-ai-message-avatar">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
                 </div>
-                <div class="launcher-ai-bubble launcher-ai-typing">
+                <div class="launcher-ai-message-content launcher-ai-typing">
                     <span></span><span></span><span></span>
                 </div>
             `;

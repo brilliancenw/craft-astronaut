@@ -10,6 +10,7 @@ use craft\base\Model;
 class Settings extends Model
 {
     // AI Assistant settings
+    public bool $enableAIAssistant = true;
     public string $aiHotkey = 'cmd+j';
     public string $aiProvider = 'claude';
     public string $claudeApiKey = '';
