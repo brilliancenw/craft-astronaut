@@ -27,7 +27,7 @@
     "require": {
         "php": "^8.2",
         "craftcms/cms": "^5.0.0",
-        "brilliance/craft-launcher": "^1.2.0"
+        "brilliance/craft-launcher": "@dev"
     },
     "autoload": {
         "psr-4": {

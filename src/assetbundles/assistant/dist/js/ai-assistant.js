@@ -103,6 +103,15 @@
                 if (self.isHotkeyPressed(e)) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
+
+                    // If launcher modal is open, close it first
+                    if (window.LauncherPlugin && window.LauncherPlugin.modal) {
+                        const launcherModal = window.LauncherPlugin.modal;
+                        if (launcherModal.style.display !== 'none') {
+                            window.LauncherPlugin.closeModal();
+                        }
+                    }
+
                     self.toggleModal();
                     return false;
                 }
