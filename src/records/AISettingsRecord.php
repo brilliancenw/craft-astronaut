@@ -47,15 +47,21 @@ class AISettingsRecord extends ActiveRecord
      */
     public static function getInstance(): ?self
     {
-        $record = self::find()->one();
+        try {
+            $record = self::find()->one();
 
-        // Create default if doesn't exist
-        if (!$record) {
-            $record = new self();
-            $record->aiProvider = 'claude';
-            $record->save();
+            // Create default if doesn't exist
+            if (!$record) {
+                $record = new self();
+                $record->aiProvider = 'claude';
+                $record->save();
+            }
+
+            return $record;
+        } catch (\yii\db\Exception $e) {
+            // Table doesn't exist yet (during initial installation before migrations run)
+            // Return null so calling code can handle gracefully
+            return null;
         }
-
-        return $record;
     }
 }

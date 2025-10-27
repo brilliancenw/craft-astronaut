@@ -57,7 +57,7 @@ class AIProviderFactory
     private static function getClaudeModel(): string
     {
         $settings = LauncherAssistant::$plugin->aiSettingsService->getSettings();
-        return $settings->claudeModel ?? 'claude-sonnet-4-20250514';
+        return $settings?->claudeModel ?? 'claude-sonnet-4-20250514';
     }
 
     /**

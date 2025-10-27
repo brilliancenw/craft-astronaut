@@ -1,0 +1,33 @@
+{% import "_includes/forms" as forms %}
+
+<div class="readable">
+    <div style="background: #fef3c7; border: 2px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+        <h2 style="margin-top: 0; color: #92400e;">Database Setup Required</h2>
+        <p><strong>The Launcher Assistant plugin needs to create its database tables.</strong></p>
+
+        <h3>To complete installation:</h3>
+        <ol>
+            <li>Run the following command in your terminal:
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 4px; margin: 12px 0; overflow-x: auto;"><code>/Applications/MAMP/bin/php/php8.2.26/bin/php craft migrate/all</code></pre>
+            </li>
+            <li>After migrations complete, refresh this page</li>
+            <li>Configure your AI provider API keys</li>
+        </ol>
+
+        <h3>What migrations will create:</h3>
+        <ul>
+            <li><code>launcher_ai_settings</code> - Stores AI provider configuration and API keys</li>
+            <li><code>launcher_ai_conversations</code> - Stores AI conversation threads</li>
+            <li><code>launcher_ai_messages</code> - Stores individual messages in conversations</li>
+        </ul>
+
+        <p class="light" style="margin-bottom: 0;"><strong>Note:</strong> This is a one-time setup process. Once migrations are run, the plugin will be fully functional.</p>
+    </div>
+
+    {% if error %}
+    <details style="margin-top: 20px;">
+        <summary style="cursor: pointer; color: #64748b;">Technical Details</summary>
+        <pre style="background: #f1f5f9; padding: 12px; border-radius: 4px; margin-top: 12px; overflow-x: auto;"><code>{{ error }}</code></pre>
+    </details>
+    {% endif %}
+</div>

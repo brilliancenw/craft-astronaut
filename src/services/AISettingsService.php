@@ -20,7 +20,7 @@ class AISettingsService extends Component
     /**
      * Get AI settings
      */
-    public function getSettings(): AISettingsRecord
+    public function getSettings(): ?AISettingsRecord
     {
         if ($this->_settings === null) {
             $this->_settings = AISettingsRecord::getInstance();
@@ -35,6 +35,12 @@ class AISettingsService extends Component
     public function saveSettings(array $attributes): bool
     {
         $settings = $this->getSettings();
+
+        // If settings table doesn't exist yet (during installation), skip save
+        if (!$settings) {
+            Craft::warning('Cannot save AI settings - database table not yet created. Run migrations first.', __METHOD__);
+            return false;
+        }
 
         // Set attributes
         $settings->setAttributes($attributes, false);
@@ -81,6 +87,11 @@ class AISettingsService extends Component
 
         // Fall back to database (encrypted storage)
         $settings = $this->getSettings();
+
+        // If settings table doesn't exist yet (during installation), return null
+        if (!$settings) {
+            return null;
+        }
 
         $encrypted = match ($provider) {
             'claude' => $settings->claudeApiKey,
@@ -185,7 +196,8 @@ class AISettingsService extends Component
      */
     public function getProviderName(): string
     {
-        return $this->getSettings()->aiProvider ?? 'claude';
+        $settings = $this->getSettings();
+        return $settings?->aiProvider ?? 'claude';
     }
 
     /**
@@ -194,6 +206,20 @@ class AISettingsService extends Component
     public function getBrandInfo(): array
     {
         $settings = $this->getSettings();
+
+        // If settings table doesn't exist yet, return empty defaults
+        if (!$settings) {
+            return [
+                'websiteName' => null,
+                'brandOwner' => null,
+                'brandTagline' => null,
+                'brandDescription' => null,
+                'brandVoice' => null,
+                'targetAudience' => null,
+                'brandColors' => [],
+                'brandLogoUrl' => null,
+            ];
+        }
 
         return [
             'websiteName' => $settings->websiteName,
@@ -213,6 +239,17 @@ class AISettingsService extends Component
     public function getContentGuidelines(): array
     {
         $settings = $this->getSettings();
+
+        // If settings table doesn't exist yet, return empty defaults
+        if (!$settings) {
+            return [
+                'contentGuidelines' => null,
+                'contentTone' => null,
+                'writingStyle' => null,
+                'seoGuidelines' => null,
+                'customGuidelines' => [],
+            ];
+        }
 
         return [
             'contentGuidelines' => $settings->contentGuidelines,

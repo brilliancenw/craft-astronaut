@@ -35,31 +35,37 @@ class AIConversationService extends Component
             return null;
         }
 
-        $settings = LauncherAssistant::$plugin->getSettings();
+        try {
+            $settings = LauncherAssistant::$plugin->getSettings();
 
-        // Try to get the most recent conversation
-        $conversation = AIConversationRecord::find()
-            ->where(['userId' => $userId])
-            ->orderBy(['lastMessageAt' => SORT_DESC])
-            ->one();
+            // Try to get the most recent conversation
+            $conversation = AIConversationRecord::find()
+                ->where(['userId' => $userId])
+                ->orderBy(['lastMessageAt' => SORT_DESC])
+                ->one();
 
-        // Create new conversation if none exists
-        if (!$conversation) {
-            $conversation = new AIConversationRecord();
-            $conversation->userId = $userId;
-            $conversation->threadId = StringHelper::UUID();
-            $conversation->provider = $settings->aiProvider;
-            $conversation->title = 'New Conversation';
-            $conversation->lastMessageAt = DateTimeHelper::currentUTCDateTime();
-            $conversation->messageCount = 0;
+            // Create new conversation if none exists
+            if (!$conversation) {
+                $conversation = new AIConversationRecord();
+                $conversation->userId = $userId;
+                $conversation->threadId = StringHelper::UUID();
+                $conversation->provider = $settings->aiProvider;
+                $conversation->title = 'New Conversation';
+                $conversation->lastMessageAt = DateTimeHelper::currentUTCDateTime();
+                $conversation->messageCount = 0;
 
-            if (!$conversation->save()) {
-                Craft::error('Failed to save conversation: ' . json_encode($conversation->getErrors()), __METHOD__);
-                return null;
+                if (!$conversation->save()) {
+                    Craft::error('Failed to save conversation: ' . json_encode($conversation->getErrors()), __METHOD__);
+                    return null;
+                }
             }
-        }
 
-        return $conversation;
+            return $conversation;
+        } catch (\yii\db\Exception $e) {
+            // Table doesn't exist yet (during initial installation before migrations run)
+            Craft::warning('Cannot create conversation - database tables not yet created. Run migrations first.', __METHOD__);
+            return null;
+        }
     }
 
     /**
@@ -67,7 +73,12 @@ class AIConversationService extends Component
      */
     public function getConversationByThreadId(string $threadId): ?AIConversationRecord
     {
-        return AIConversationRecord::findOne(['threadId' => $threadId]);
+        try {
+            return AIConversationRecord::findOne(['threadId' => $threadId]);
+        } catch (\yii\db\Exception $e) {
+            // Table doesn't exist yet (during initial installation before migrations run)
+            return null;
+        }
     }
 
     /**
@@ -79,44 +90,49 @@ class AIConversationService extends Component
      */
     public function getMessages(int $conversationId, ?int $limit = null, bool $includeToolMessages = false): array
     {
-        $settings = LauncherAssistant::$plugin->getSettings();
-        $limit = $limit ?? $settings->maxAIConversationHistory;
+        try {
+            $settings = LauncherAssistant::$plugin->getSettings();
+            $limit = $limit ?? $settings->maxAIConversationHistory;
 
-        $query = AIMessageRecord::find()
-            ->where(['conversationId' => $conversationId]);
+            $query = AIMessageRecord::find()
+                ->where(['conversationId' => $conversationId]);
 
-        // Filter out tool messages unless explicitly requested
-        if (!$includeToolMessages) {
-            $query->andWhere(['!=', 'role', 'tool']);
-        }
-
-        $records = $query
-            ->orderBy(['dateCreated' => SORT_DESC])
-            ->limit($limit)
-            ->all();
-
-        // Reverse to get chronological order
-        $records = array_reverse($records);
-
-        $messages = [];
-        foreach ($records as $record) {
-            // Skip assistant messages with empty content (these are just tool call messages)
-            if ($record->role === 'assistant' && empty($record->content) && !$includeToolMessages) {
-                continue;
+            // Filter out tool messages unless explicitly requested
+            if (!$includeToolMessages) {
+                $query->andWhere(['!=', 'role', 'tool']);
             }
 
-            $messages[] = [
-                'id' => $record->id,
-                'role' => $record->role,
-                'content' => $record->content,
-                'toolCalls' => $record->toolCalls,
-                'toolResults' => $record->toolResults,
-                'metadata' => $record->metadata,
-                'dateCreated' => $record->dateCreated,
-            ];
-        }
+            $records = $query
+                ->orderBy(['dateCreated' => SORT_DESC])
+                ->limit($limit)
+                ->all();
 
-        return $messages;
+            // Reverse to get chronological order
+            $records = array_reverse($records);
+
+            $messages = [];
+            foreach ($records as $record) {
+                // Skip assistant messages with empty content (these are just tool call messages)
+                if ($record->role === 'assistant' && empty($record->content) && !$includeToolMessages) {
+                    continue;
+                }
+
+                $messages[] = [
+                    'id' => $record->id,
+                    'role' => $record->role,
+                    'content' => $record->content,
+                    'toolCalls' => $record->toolCalls,
+                    'toolResults' => $record->toolResults,
+                    'metadata' => $record->metadata,
+                    'dateCreated' => $record->dateCreated,
+                ];
+            }
+
+            return $messages;
+        } catch (\yii\db\Exception $e) {
+            // Table doesn't exist yet (during initial installation before migrations run)
+            return [];
+        }
     }
 
     /**
