@@ -280,19 +280,19 @@ HTML;
      */
     protected function settingsHtml(): ?string
     {
+        // Check which keys are set via environment variables (this doesn't require database)
+        $envKeys = [
+            'claude' => $this->aiSettingsService->hasEnvApiKey('claude'),
+            'openai' => $this->aiSettingsService->hasEnvApiKey('openai'),
+            'gemini' => $this->aiSettingsService->hasEnvApiKey('gemini'),
+        ];
+
         try {
-            // Get masked API keys for display
+            // Get masked API keys for display (this may require database)
             $maskedKeys = [
                 'claude' => $this->aiSettingsService->getMaskedApiKey('claude'),
                 'openai' => $this->aiSettingsService->getMaskedApiKey('openai'),
                 'gemini' => $this->aiSettingsService->getMaskedApiKey('gemini'),
-            ];
-
-            // Check which keys are set via environment variables
-            $envKeys = [
-                'claude' => $this->aiSettingsService->hasEnvApiKey('claude'),
-                'openai' => $this->aiSettingsService->hasEnvApiKey('openai'),
-                'gemini' => $this->aiSettingsService->hasEnvApiKey('gemini'),
             ];
 
             return Craft::$app->getView()->renderTemplate('launcher-assistant/settings', [
@@ -302,7 +302,21 @@ HTML;
             ]);
         } catch (\Exception $e) {
             // During initial installation, database tables may not exist yet
-            // Show migration reminder message
+            // If env vars are configured, show settings page anyway with just env var info
+            if ($envKeys['claude'] || $envKeys['openai'] || $envKeys['gemini']) {
+                return Craft::$app->getView()->renderTemplate('launcher-assistant/settings', [
+                    'settings' => $this->getSettings(),
+                    'maskedKeys' => [
+                        'claude' => $envKeys['claude'] ? '(Set via environment variable)' : null,
+                        'openai' => $envKeys['openai'] ? '(Set via environment variable)' : null,
+                        'gemini' => $envKeys['gemini'] ? '(Set via environment variable)' : null,
+                    ],
+                    'envKeys' => $envKeys,
+                    'tablesNotReady' => true, // Flag to show a notice about pending migrations
+                ]);
+            }
+
+            // No env vars and no database - show migration reminder
             return Craft::$app->getView()->renderTemplate('launcher-assistant/settings-pending-migration', [
                 'error' => $e->getMessage(),
             ]);

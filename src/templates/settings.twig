@@ -4,6 +4,15 @@
     <h2>API Keys</h2>
     <p>Configure your AI provider API keys. These keys are encrypted and stored securely in the database.</p>
 
+    {% if tablesNotReady is defined and tablesNotReady %}
+        <div style="background: #fef3c7; border: 2px solid #f59e0b; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+            <h3 style="margin-top: 0; color: #92400e;">Database Tables Pending</h3>
+            <p><strong>Environment variables detected!</strong> Your API keys are configured and working.</p>
+            <p>To enable database storage and full functionality, run migrations:</p>
+            <pre style="background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 4px; margin: 12px 0;"><code>/Applications/MAMP/bin/php/php8.2.26/bin/php craft migrate/all</code></pre>
+        </div>
+    {% endif %}
+
     <div class="readable" style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
         <h3 style="margin-top: 0;">Recommended: Use Environment Variables</h3>
         <p><strong>Best Practice:</strong> Store API keys in environment variables (.env file) for better security.</p>
