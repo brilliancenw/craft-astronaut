@@ -17,7 +17,6 @@
 
     {{ forms.autosuggestField({
         label: 'Claude API Key',
-        instructions: 'Enter your Claude API key from console.anthropic.com, or use an environment variable like $LAUNCHER_CLAUDE_API_KEY. Current: ' ~ (maskedKeys.claude ?: 'Not set'),
         id: 'claudeApiKey',
         name: 'claudeApiKey',
         value: settings['claudeApiKey'] ?? '',
@@ -33,7 +32,7 @@
 
     {{ forms.autosuggestField({
         label: 'OpenAI API Key',
-        instructions: 'OpenAI provider support coming soon. Current: ' ~ (maskedKeys.openai ?: 'Not set'),
+        instructions: 'OpenAI provider support coming soon.',
         id: 'openaiApiKey',
         name: 'openaiApiKey',
         value: settings['openaiApiKey'] ?? '',
@@ -50,7 +49,7 @@
 
     {{ forms.autosuggestField({
         label: 'Gemini API Key',
-        instructions: 'Gemini provider support coming soon. Current: ' ~ (maskedKeys.gemini ?: 'Not set'),
+        instructions: 'Gemini provider support coming soon.',
         id: 'geminiApiKey',
         name: 'geminiApiKey',
         value: settings['geminiApiKey'] ?? '',
