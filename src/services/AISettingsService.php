@@ -45,15 +45,15 @@ class AISettingsService extends Component
         // Set attributes
         $settings->setAttributes($attributes, false);
 
-        // Encrypt API keys before saving
+        // Handle API keys - encrypt literal values, store env var references as-is
         if (isset($attributes['claudeApiKey'])) {
-            $settings->claudeApiKey = $this->encryptApiKey($attributes['claudeApiKey']);
+            $settings->claudeApiKey = $this->prepareApiKeyForStorage($attributes['claudeApiKey']);
         }
         if (isset($attributes['openaiApiKey'])) {
-            $settings->openaiApiKey = $this->encryptApiKey($attributes['openaiApiKey']);
+            $settings->openaiApiKey = $this->prepareApiKeyForStorage($attributes['openaiApiKey']);
         }
         if (isset($attributes['geminiApiKey'])) {
-            $settings->geminiApiKey = $this->encryptApiKey($attributes['geminiApiKey']);
+            $settings->geminiApiKey = $this->prepareApiKeyForStorage($attributes['geminiApiKey']);
         }
 
         return $settings->save();
@@ -112,6 +112,23 @@ class AISettingsService extends Component
      */
     public function getMaskedApiKey(string $provider): ?string
     {
+        // Check if stored value is an env var reference
+        $settings = $this->getSettings();
+        if ($settings) {
+            $storedValue = match ($provider) {
+                'claude' => $settings->claudeApiKey,
+                'openai' => $settings->openaiApiKey,
+                'gemini' => $settings->geminiApiKey,
+                default => null,
+            };
+
+            // If it's an env var reference, show that instead of masking
+            if ($storedValue && str_starts_with($storedValue, '$')) {
+                return $storedValue; // Show the env var reference as-is (e.g., "$LAUNCHER_CLAUDE_API_KEY")
+            }
+        }
+
+        // Otherwise get the actual key and mask it
         $apiKey = $this->getApiKey($provider);
 
         if (!$apiKey) {
@@ -150,6 +167,26 @@ class AISettingsService extends Component
     }
 
     /**
+     * Prepare API key for storage
+     * Environment variable references (starting with $) are stored as-is
+     * Literal values are encrypted before storage
+     */
+    private function prepareApiKeyForStorage(?string $key): ?string
+    {
+        if (empty($key)) {
+            return null;
+        }
+
+        // If it's an environment variable reference, store as-is
+        if (str_starts_with($key, '$')) {
+            return $key;
+        }
+
+        // Otherwise, encrypt the literal value
+        return $this->encryptApiKey($key);
+    }
+
+    /**
      * Encrypt an API key
      */
     private function encryptApiKey(?string $key): ?string
@@ -164,7 +201,7 @@ class AISettingsService extends Component
     }
 
     /**
-     * Decrypt an API key
+     * Decrypt an API key or parse environment variable reference
      */
     private function decryptApiKey(?string $encrypted): ?string
     {
@@ -172,6 +209,12 @@ class AISettingsService extends Component
             return null;
         }
 
+        // If it's an environment variable reference, parse it
+        if (str_starts_with($encrypted, '$')) {
+            return App::parseEnv($encrypted);
+        }
+
+        // Otherwise, decrypt the encrypted value
         try {
             // Base64 decode first, then decrypt
             $decoded = base64_decode($encrypted);
