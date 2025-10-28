@@ -13,20 +13,6 @@
         </div>
     {% endif %}
 
-    <div class="readable" style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-        <h3 style="margin-top: 0;">Recommended: Use Environment Variables</h3>
-        <p><strong>Best Practice:</strong> Store API keys in environment variables (.env file) for better security.</p>
-        <p>Environment variables are checked first and take priority over database values.</p>
-        <ul>
-            <li><code>LAUNCHER_CLAUDE_API_KEY</code> - Claude API key</li>
-            <li><code>LAUNCHER_OPENAI_API_KEY</code> - OpenAI API key</li>
-            <li><code>LAUNCHER_GEMINI_API_KEY</code> - Gemini API key</li>
-        </ul>
-        <p class="light">If not set via environment variables, keys can be stored encrypted in the database using the fields below.</p>
-    </div>
-
-    <hr>
-
     <h3>Claude (Anthropic)</h3>
 
     {{ forms.autosuggestField({
