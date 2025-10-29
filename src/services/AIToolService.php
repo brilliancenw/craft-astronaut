@@ -902,13 +902,13 @@ class AIToolService extends Component
             // Clear asset transform indexes
             Craft::$app->assetTransforms->deleteAllTransformIndexes();
 
-            // Clear compiled templates
+            // Clear compiled templates using Craft's FileHelper
             $compiledTemplatesPath = Craft::$app->path->getCompiledTemplatesPath();
             if (is_dir($compiledTemplatesPath)) {
-                $this->deleteDirectory($compiledTemplatesPath);
+                \craft\helpers\FileHelper::clearDirectory($compiledTemplatesPath);
             }
 
-            Craft::info('Caches cleared via AI assistant', __METHOD__);
+            Craft::info('Caches cleared via Astronaut', __METHOD__);
 
             return [
                 'success' => true,
@@ -1087,28 +1087,4 @@ class AIToolService extends Component
         }
     }
 
-    /**
-     * Helper to delete directory recursively
-     */
-    private function deleteDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $items = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($items as $item) {
-            if ($item->isDir()) {
-                @rmdir($item->getRealPath());
-            } else {
-                @unlink($item->getRealPath());
-            }
-        }
-
-        @rmdir($dir);
-    }
 }
