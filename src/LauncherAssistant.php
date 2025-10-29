@@ -380,8 +380,8 @@ HTML;
 
         try {
             // Check if tables already exist
-            $conversationTableExists = $db->schema->getTableSchema('{{%ai_conversations}}') !== null;
-            $messagesTableExists = $db->schema->getTableSchema('{{%ai_messages}}') !== null;
+            $conversationTableExists = $db->schema->getTableSchema('{{%launcher_ai_conversations}}') !== null;
+            $messagesTableExists = $db->schema->getTableSchema('{{%launcher_ai_messages}}') !== null;
             $settingsTableExists = $db->schema->getTableSchema('{{%launcher_ai_settings}}') !== null;
 
             if ($conversationTableExists && $messagesTableExists && $settingsTableExists) {
