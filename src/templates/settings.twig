@@ -1,6 +1,21 @@
 {% import "_includes/forms" as forms %}
 
 <div class="readable">
+    {% if missingRocketLauncher is defined and missingRocketLauncher %}
+        <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="color: #92400e; margin-top: 0; font-size: 18px;">🚀 Houston, We Have a Problem!</h3>
+            <p style="color: #78350f; margin: 8px 0;">
+                You're trying to launch an Astronaut without a Rocket Launcher!
+                This plugin requires the free <strong>Rocket Launcher</strong> plugin to function.
+            </p>
+            <p style="margin: 16px 0 0 0;">
+                <a href="https://plugins.craftcms.com/rocket-launcher" target="_blank" class="btn submit" style="display: inline-block;">
+                    Install Rocket Launcher from Plugin Store →
+                </a>
+            </p>
+        </div>
+    {% endif %}
+
     <h2>API Keys</h2>
     <p>Configure your AI provider API keys. These keys are encrypted and stored securely in the database.</p>
 

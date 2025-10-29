@@ -46,12 +46,6 @@ class LauncherAssistant extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        // Check if Launcher is installed
-        if (!Craft::$app->plugins->isPluginInstalled('launcher')) {
-            Craft::error('Launcher Assistant requires the Launcher plugin to be installed', __METHOD__);
-            return;
-        }
-
         // Set controller namespace
         $this->controllerNamespace = 'brilliance\\launcherassistant\\controllers';
 
@@ -89,6 +83,11 @@ class LauncherAssistant extends Plugin
                 $event->rules['POST launcher/validate-key'] = 'astronaut/admin/validate-key';
             }
         );
+
+        // Show dependency warning in CP if Rocket Launcher is missing
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->showDependencyWarning();
+        }
 
         // Register assistant assets in CP
         if (Craft::$app->getRequest()->getIsCpRequest()) {
@@ -139,8 +138,10 @@ class LauncherAssistant extends Plugin
             );
         }
 
-        // Register with Launcher's addon system
-        $this->registerWithLauncher();
+        // Register with Launcher's addon system (only if Launcher is installed)
+        if ($this->isRocketLauncherInstalled()) {
+            $this->registerWithLauncher();
+        }
 
         Craft::info(
             Craft::t(
@@ -299,6 +300,7 @@ HTML;
                 'settings' => $this->getSettings(),
                 'maskedKeys' => $maskedKeys,
                 'envKeys' => $envKeys,
+                'missingRocketLauncher' => !$this->isRocketLauncherInstalled(),
             ]);
         } catch (\Exception $e) {
             // During initial installation, database tables may not exist yet
@@ -313,6 +315,7 @@ HTML;
                     ],
                     'envKeys' => $envKeys,
                     'tablesNotReady' => true, // Flag to show a notice about pending migrations
+                    'missingRocketLauncher' => !$this->isRocketLauncherInstalled(),
                 ]);
             }
 
@@ -394,6 +397,46 @@ HTML;
         } catch (\Exception $e) {
             Craft::error('Failed to check AI table status: ' . $e->getMessage(), __METHOD__);
             return false;
+        }
+    }
+
+    /**
+     * Check if Rocket Launcher plugin is installed
+     */
+    public function isRocketLauncherInstalled(): bool
+    {
+        return Craft::$app->plugins->isPluginInstalled('launcher') &&
+               Craft::$app->plugins->isPluginEnabled('launcher');
+    }
+
+    /**
+     * Show dependency warning banner in CP if Rocket Launcher is missing
+     */
+    protected function showDependencyWarning(): void
+    {
+        if (!$this->isRocketLauncherInstalled()) {
+            Event::on(
+                View::class,
+                View::EVENT_BEFORE_RENDER_TEMPLATE,
+                function () {
+                    $pluginStoreUrl = 'https://plugins.craftcms.com/rocket-launcher';
+
+                    $warning = '<div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 16px; margin: 16px 0;">
+                        <strong style="color: #92400e; font-size: 16px;">🚀 Houston, We Have a Problem!</strong>
+                        <p style="color: #78350f; margin: 8px 0 0 0;">
+                            You\'re trying to launch an Astronaut without a Rocket Launcher!
+                            This plugin requires the free <strong>Rocket Launcher</strong> plugin to function.
+                        </p>
+                        <p style="margin: 12px 0 0 0;">
+                            <a href="' . $pluginStoreUrl . '" target="_blank" style="display: inline-block; background: #1976d2; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: 500;">
+                                Install Rocket Launcher from Plugin Store →
+                            </a>
+                        </p>
+                    </div>';
+
+                    Craft::$app->getView()->registerHtml($warning);
+                }
+            );
         }
     }
 
