@@ -68,25 +68,25 @@ class LauncherAssistant extends Plugin
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 // API endpoints for AI interaction
-                $event->rules['POST launcher-assistant/ai/start'] = 'launcher-assistant/ai/start';
-                $event->rules['POST launcher-assistant/ai/send'] = 'launcher-assistant/ai/send';
-                $event->rules['GET launcher-assistant/ai/history'] = 'launcher-assistant/ai/history';
-                $event->rules['GET launcher-assistant/ai/list'] = 'launcher-assistant/ai/list';
-                $event->rules['POST launcher-assistant/ai/new'] = 'launcher-assistant/ai/new';
-                $event->rules['POST launcher-assistant/ai/delete'] = 'launcher-assistant/ai/delete';
-                $event->rules['GET launcher-assistant/ai/validate'] = 'launcher-assistant/ai/validate';
-                $event->rules['GET launcher-assistant/ai/models'] = 'launcher-assistant/ai/models';
+                $event->rules['POST astronaut/ai/start'] = 'astronaut/ai/start';
+                $event->rules['POST astronaut/ai/send'] = 'astronaut/ai/send';
+                $event->rules['GET astronaut/ai/history'] = 'astronaut/ai/history';
+                $event->rules['GET astronaut/ai/list'] = 'astronaut/ai/list';
+                $event->rules['POST astronaut/ai/new'] = 'astronaut/ai/new';
+                $event->rules['POST astronaut/ai/delete'] = 'astronaut/ai/delete';
+                $event->rules['GET astronaut/ai/validate'] = 'astronaut/ai/validate';
+                $event->rules['GET astronaut/ai/models'] = 'astronaut/ai/models';
 
                 // Admin panel routes - integrate with Launcher's CP section
-                $event->rules['launcher/api-config'] = 'launcher-assistant/admin/api-config';
-                $event->rules['launcher/brand-info'] = 'launcher-assistant/admin/brand-info';
-                $event->rules['launcher/guidelines'] = 'launcher-assistant/admin/guidelines';
+                $event->rules['launcher/api-config'] = 'astronaut/admin/api-config';
+                $event->rules['launcher/brand-info'] = 'astronaut/admin/brand-info';
+                $event->rules['launcher/guidelines'] = 'astronaut/admin/guidelines';
 
                 // Admin panel save actions
-                $event->rules['POST launcher/save-api-config'] = 'launcher-assistant/admin/save-api-config';
-                $event->rules['POST launcher/save-brand-info'] = 'launcher-assistant/admin/save-brand-info';
-                $event->rules['POST launcher/save-guidelines'] = 'launcher-assistant/admin/save-guidelines';
-                $event->rules['POST launcher/validate-key'] = 'launcher-assistant/admin/validate-key';
+                $event->rules['POST launcher/save-api-config'] = 'astronaut/admin/save-api-config';
+                $event->rules['POST launcher/save-brand-info'] = 'astronaut/admin/save-brand-info';
+                $event->rules['POST launcher/save-guidelines'] = 'astronaut/admin/save-guidelines';
+                $event->rules['POST launcher/validate-key'] = 'astronaut/admin/validate-key';
             }
         );
 
@@ -112,9 +112,9 @@ class LauncherAssistant extends Plugin
                                     if (window.LauncherAI) {
                                         window.LauncherAI.init({
                                             hotkey: '$hotkey',
-                                            sendMessageUrl: Craft.getActionUrl('launcher-assistant/ai/send'),
-                                            startConversationUrl: Craft.getActionUrl('launcher-assistant/ai/start'),
-                                            validateUrl: Craft.getActionUrl('launcher-assistant/ai/validate')
+                                            sendMessageUrl: Craft.getActionUrl('astronaut/ai/send'),
+                                            startConversationUrl: Craft.getActionUrl('astronaut/ai/start'),
+                                            validateUrl: Craft.getActionUrl('astronaut/ai/validate')
                                         });
                                     }
                                 });
@@ -123,9 +123,9 @@ class LauncherAssistant extends Plugin
                                     if (window.LauncherAI) {
                                         window.LauncherAI.init({
                                             hotkey: '$hotkey',
-                                            sendMessageUrl: Craft.getActionUrl('launcher-assistant/ai/send'),
-                                            startConversationUrl: Craft.getActionUrl('launcher-assistant/ai/start'),
-                                            validateUrl: Craft.getActionUrl('launcher-assistant/ai/validate')
+                                            sendMessageUrl: Craft.getActionUrl('astronaut/ai/send'),
+                                            startConversationUrl: Craft.getActionUrl('astronaut/ai/start'),
+                                            validateUrl: Craft.getActionUrl('astronaut/ai/validate')
                                         });
                                     }
                                 });
@@ -144,7 +144,7 @@ class LauncherAssistant extends Plugin
 
         Craft::info(
             Craft::t(
-                'launcher-assistant',
+                'astronaut',
                 '{name} plugin loaded',
                 ['name' => $this->name]
             ),
@@ -163,7 +163,7 @@ class LauncherAssistant extends Plugin
             \brilliance\launcher\services\AddonService::EVENT_REGISTER_ADDONS,
             function (\brilliance\launcher\events\RegisterAddonPluginsEvent $event) {
                 $event->registerAddon([
-                    'handle' => 'launcher-assistant',
+                    'handle' => 'astronaut',
                     'name' => 'Assistant',
                     'priority' => 10,
                 ]);
@@ -295,7 +295,7 @@ HTML;
                 'gemini' => $this->aiSettingsService->getMaskedApiKey('gemini'),
             ];
 
-            return Craft::$app->getView()->renderTemplate('launcher-assistant/settings', [
+            return Craft::$app->getView()->renderTemplate('astronaut/settings', [
                 'settings' => $this->getSettings(),
                 'maskedKeys' => $maskedKeys,
                 'envKeys' => $envKeys,
@@ -304,7 +304,7 @@ HTML;
             // During initial installation, database tables may not exist yet
             // If env vars are configured, show settings page anyway with just env var info
             if ($envKeys['claude'] || $envKeys['openai'] || $envKeys['gemini']) {
-                return Craft::$app->getView()->renderTemplate('launcher-assistant/settings', [
+                return Craft::$app->getView()->renderTemplate('astronaut/settings', [
                     'settings' => $this->getSettings(),
                     'maskedKeys' => [
                         'claude' => $envKeys['claude'] ? '(Set via environment variable)' : null,
@@ -317,7 +317,7 @@ HTML;
             }
 
             // No env vars and no database - show migration reminder
-            return Craft::$app->getView()->renderTemplate('launcher-assistant/settings-pending-migration', [
+            return Craft::$app->getView()->renderTemplate('astronaut/settings-pending-migration', [
                 'error' => $e->getMessage(),
             ]);
         }

@@ -7,7 +7,7 @@
 {% block content %}
     <form method="post" accept-charset="UTF-8">
         {{ csrfInput() }}
-        {{ actionInput('launcher-assistant/admin/save-api-config') }}
+        {{ actionInput('astronaut/admin/save-api-config') }}
         {{ redirectInput('launcher/api-config') }}
 
         <div class="readable">
@@ -15,7 +15,7 @@
             <p>Configure your AI provider and model settings.</p>
 
             <div class="readable" style="background: #eff6ff; border: 1px solid #3b82f6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                <strong>API Keys:</strong> To configure API keys, go to <a href="{{ url('settings/plugins/launcher-assistant') }}">Settings → Launcher Assistant</a>.
+                <strong>API Keys:</strong> To configure API keys, go to <a href="{{ url('settings/plugins/astronaut') }}">Settings → Launcher Assistant</a>.
                 <br><small class="light">API keys are stored separately in the Settings page for security.</small>
             </div>
 
@@ -57,7 +57,7 @@
                 </div>
 
                 <p id="no-models-message" class="light" style="display: none; color: #dc2626;">
-                    <strong>No models available.</strong> Please configure your Claude API key in <a href="{{ url('settings/plugins/launcher-assistant') }}">Settings</a> and try again.
+                    <strong>No models available.</strong> Please configure your Claude API key in <a href="{{ url('settings/plugins/astronaut') }}">Settings</a> and try again.
                 </p>
             </div>
         </div>
@@ -88,7 +88,7 @@
             noModelsMessage.style.display = 'none';
 
             try {
-                const response = await fetch(Craft.getActionUrl('launcher-assistant/ai/models'), {
+                const response = await fetch(Craft.getActionUrl('astronaut/ai/models'), {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -135,7 +135,7 @@
         });
 
         // Auto-fetch models if API key is configured
-        {% if craft.app.plugins.getPlugin('launcher-assistant').aiSettingsService.hasApiKey('claude') %}
+        {% if craft.app.plugins.getPlugin('astronaut').aiSettingsService.hasApiKey('claude') %}
             fetchBtn.click();
         {% endif %}
     });

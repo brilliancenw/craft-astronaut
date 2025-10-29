@@ -6,7 +6,7 @@
 }
 
 /* Ensure assistant tab content fills available space when visible */
-#launcher-assistant-tab {
+#astronaut-tab {
     flex-direction: column;
     flex: 1;
     min-height: 0;
@@ -14,7 +14,7 @@
 }
 
 /* Only apply flex display when the tab is actually shown (not hidden) */
-#launcher-assistant-tab:not([style*="display: none"]) {
+#astronaut-tab:not([style*="display: none"]) {
     display: flex !important;
 }
 

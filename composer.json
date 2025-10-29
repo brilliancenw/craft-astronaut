@@ -1,6 +1,6 @@
 {
-    "name": "brilliance/craft-launcher-assistant",
-    "description": "AI-powered assistant for Craft CMS that integrates with the Launcher plugin",
+    "name": "brilliance/craft-astronaut",
+    "description": "AI-powered assistant for Craft CMS that integrates with the Rocket Launcher plugin",
     "type": "craft-plugin",
     "version": "1.0.0",
     "keywords": [
@@ -9,13 +9,14 @@
         "craftcms",
         "craft-plugin",
         "launcher",
+        "astronaut",
         "assistant",
         "ai",
         "claude"
     ],
     "support": {
-        "docs": "https://github.com/brilliancenw/craft-launcher-assistant/blob/main/README.md",
-        "issues": "https://github.com/brilliancenw/craft-launcher-assistant/issues"
+        "docs": "https://github.com/brilliancenw/craft-astronaut/blob/main/README.md",
+        "issues": "https://github.com/brilliancenw/craft-astronaut/issues"
     },
     "license": "proprietary",
     "authors": [
@@ -35,13 +36,13 @@
         }
     },
     "extra": {
-        "name": "Launcher Assistant",
-        "handle": "launcher-assistant",
+        "name": "Astronaut",
+        "handle": "astronaut",
         "class": "brilliance\\launcherassistant\\LauncherAssistant",
         "developer": "Brilliance",
         "developerUrl": "https://www.brilliancenw.com/",
-        "documentationUrl": "https://github.com/brilliancenw/craft-launcher-assistant/blob/main/README.md",
-        "changelogUrl": "https://github.com/brilliancenw/craft-launcher-assistant/blob/main/CHANGELOG.md"
+        "documentationUrl": "https://github.com/brilliancenw/craft-astronaut/blob/main/README.md",
+        "changelogUrl": "https://github.com/brilliancenw/craft-astronaut/blob/main/CHANGELOG.md"
     },
     "require-dev": {
         "phpunit/phpunit": "^12.4",

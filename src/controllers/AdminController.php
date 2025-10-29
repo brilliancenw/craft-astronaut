@@ -33,7 +33,7 @@ class AdminController extends Controller
         // Check provider configuration
         $hasApiKey = LauncherAssistant::$plugin->aiSettingsService->hasApiKey($aiSettings->aiProvider);
 
-        return $this->renderTemplate('launcher-assistant/admin/index', [
+        return $this->renderTemplate('astronaut/admin/index', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
             'conversationCount' => $conversationCount,
@@ -53,7 +53,7 @@ class AdminController extends Controller
         $settings = LauncherAssistant::$plugin->getSettings();
         $aiSettings = LauncherAssistant::$plugin->aiSettingsService->getSettings();
 
-        return $this->renderTemplate('launcher-assistant/admin/api-config', [
+        return $this->renderTemplate('astronaut/admin/api-config', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
             'selectedTab' => 'api-config',
@@ -70,7 +70,7 @@ class AdminController extends Controller
         $settings = LauncherAssistant::$plugin->getSettings();
         $aiSettings = LauncherAssistant::$plugin->aiSettingsService->getSettings();
 
-        return $this->renderTemplate('launcher-assistant/admin/brand-info', [
+        return $this->renderTemplate('astronaut/admin/brand-info', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
             'selectedTab' => 'brand-info',
@@ -87,7 +87,7 @@ class AdminController extends Controller
         $settings = LauncherAssistant::$plugin->getSettings();
         $aiSettings = LauncherAssistant::$plugin->aiSettingsService->getSettings();
 
-        return $this->renderTemplate('launcher-assistant/admin/guidelines', [
+        return $this->renderTemplate('astronaut/admin/guidelines', [
             'settings' => $settings,
             'aiSettings' => $aiSettings,
             'selectedTab' => 'guidelines',
