@@ -229,23 +229,7 @@ class LauncherAssistant extends Plugin
 <div class="launcher-ai-assistant-content">
     <div id="launcher-ai-messages" class="launcher-ai-messages">
         <div class="launcher-ai-welcome">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M9 9h.01M15 9h.01M9 15a3 3 0 0 0 6 0"></path>
-            </svg>
-            <h3>Welcome to Craft AI Assistant</h3>
-            <p>I can help you create content, manage your site, and answer questions about Craft CMS.</p>
-            <div class="launcher-ai-suggestions">
-                <button class="launcher-ai-suggestion" data-prompt="Create a blog post about our latest product">
-                    Create a blog post
-                </button>
-                <button class="launcher-ai-suggestion" data-prompt="Clear all caches">
-                    Clear caches
-                </button>
-                <button class="launcher-ai-suggestion" data-prompt="What sections do I have in my site?">
-                    List my sections
-                </button>
-            </div>
+            <h3>Astronaut</h3>
         </div>
     </div>
     <div class="launcher-ai-input-wrapper">
