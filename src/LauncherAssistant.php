@@ -211,7 +211,7 @@ class LauncherAssistant extends Plugin
                 $tabHtml = $this->getAssistantTabHtml();
 
                 $event->registerTab('assistant', [
-                    'label' => 'Assistant',
+                    'label' => 'Astronaut',
                     'hotkey' => $settings->aiHotkey,
                     'html' => $tabHtml,
                     'priority' => 10, // Left side (lower priority = left)

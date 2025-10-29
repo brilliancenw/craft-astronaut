@@ -140,7 +140,7 @@
             })
             .catch(error => {
                 console.error('Launcher AI: Start conversation error:', error);
-                self.showError('Failed to connect to AI assistant');
+                self.showError('Failed to connect to Astronaut');
             });
         },
 
