@@ -84,11 +84,6 @@ class LauncherAssistant extends Plugin
             }
         );
 
-        // Show dependency warning in CP if Rocket Launcher is missing
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->showDependencyWarning();
-        }
-
         // Register assistant assets in CP (only if Rocket Launcher is installed)
         if (Craft::$app->getRequest()->getIsCpRequest() && $this->isRocketLauncherInstalled()) {
             Event::on(
@@ -410,45 +405,6 @@ HTML;
     {
         return Craft::$app->plugins->isPluginInstalled('launcher') &&
                Craft::$app->plugins->isPluginEnabled('launcher');
-    }
-
-    /**
-     * Show dependency warning banner in CP if Rocket Launcher is missing
-     */
-    protected function showDependencyWarning(): void
-    {
-        if (!$this->isRocketLauncherInstalled()) {
-            Event::on(
-                View::class,
-                View::EVENT_BEFORE_RENDER_TEMPLATE,
-                function ($event) {
-                    // Skip settings page - it has its own dedicated warning
-                    $request = Craft::$app->getRequest();
-                    if ($request->getSegment(1) === 'settings' &&
-                        $request->getSegment(2) === 'plugins' &&
-                        $request->getSegment(3) === 'astronaut') {
-                        return;
-                    }
-
-                    $pluginStoreUrl = 'https://plugins.craftcms.com/rocket-launcher';
-
-                    $warning = '<div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 16px; margin: 16px 0;">
-                        <strong style="color: #92400e; font-size: 16px;">🚀 Houston, We Have a Problem!</strong>
-                        <p style="color: #78350f; margin: 8px 0 0 0;">
-                            You\'re trying to launch an Astronaut without a Rocket Launcher!
-                            This plugin requires the free <strong>Rocket Launcher</strong> plugin to function.
-                        </p>
-                        <p style="margin: 12px 0 0 0;">
-                            <a href="' . $pluginStoreUrl . '" target="_blank" style="display: inline-block; background: #1976d2; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: 500;">
-                                Install Rocket Launcher from Plugin Store →
-                            </a>
-                        </p>
-                    </div>';
-
-                    Craft::$app->getView()->registerHtml($warning);
-                }
-            );
-        }
     }
 
     /**
