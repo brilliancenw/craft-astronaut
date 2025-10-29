@@ -6,30 +6,32 @@
 }
 
 /* Ensure assistant tab content fills available space when visible */
-#astronaut-tab {
+#launcher-assistant-tab {
+    display: flex;
     flex-direction: column;
     flex: 1;
     min-height: 0;
-    position: relative;
+    overflow: hidden;
 }
 
 /* Only apply flex display when the tab is actually shown (not hidden) */
-#astronaut-tab:not([style*="display: none"]) {
+#launcher-assistant-tab:not([style*="display: none"]) {
     display: flex !important;
 }
 
 .launcher-ai-assistant-content {
-    flex: 1;
-    min-height: 0;
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
 }
 
 .launcher-ai-messages {
-    flex: 1;
+    flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 20px;
     background: #fff;
 }
@@ -278,7 +280,7 @@
 }
 
 .launcher-ai-input-wrapper {
-    flex-shrink: 0;
+    flex: 0 0 auto;
     display: flex;
     align-items: flex-end;
     gap: 10px;
