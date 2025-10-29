@@ -89,8 +89,8 @@ class LauncherAssistant extends Plugin
             $this->showDependencyWarning();
         }
 
-        // Register assistant assets in CP
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
+        // Register assistant assets in CP (only if Rocket Launcher is installed)
+        if (Craft::$app->getRequest()->getIsCpRequest() && $this->isRocketLauncherInstalled()) {
             Event::on(
                 View::class,
                 View::EVENT_BEFORE_RENDER_TEMPLATE,
