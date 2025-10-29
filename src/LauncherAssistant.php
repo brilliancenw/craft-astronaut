@@ -281,6 +281,11 @@ HTML;
      */
     protected function settingsHtml(): ?string
     {
+        // If Rocket Launcher is not installed, show only the dependency warning
+        if (!$this->isRocketLauncherInstalled()) {
+            return Craft::$app->getView()->renderTemplate('astronaut/settings-missing-dependency');
+        }
+
         // Check which keys are set via environment variables (this doesn't require database)
         $envKeys = [
             'claude' => $this->aiSettingsService->hasEnvApiKey('claude'),
@@ -300,7 +305,6 @@ HTML;
                 'settings' => $this->getSettings(),
                 'maskedKeys' => $maskedKeys,
                 'envKeys' => $envKeys,
-                'missingRocketLauncher' => !$this->isRocketLauncherInstalled(),
             ]);
         } catch (\Exception $e) {
             // During initial installation, database tables may not exist yet
@@ -315,7 +319,6 @@ HTML;
                     ],
                     'envKeys' => $envKeys,
                     'tablesNotReady' => true, // Flag to show a notice about pending migrations
-                    'missingRocketLauncher' => !$this->isRocketLauncherInstalled(),
                 ]);
             }
 
@@ -418,7 +421,15 @@ HTML;
             Event::on(
                 View::class,
                 View::EVENT_BEFORE_RENDER_TEMPLATE,
-                function () {
+                function ($event) {
+                    // Skip settings page - it has its own dedicated warning
+                    $request = Craft::$app->getRequest();
+                    if ($request->getSegment(1) === 'settings' &&
+                        $request->getSegment(2) === 'plugins' &&
+                        $request->getSegment(3) === 'astronaut') {
+                        return;
+                    }
+
                     $pluginStoreUrl = 'https://plugins.craftcms.com/rocket-launcher';
 
                     $warning = '<div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 16px; margin: 16px 0;">
