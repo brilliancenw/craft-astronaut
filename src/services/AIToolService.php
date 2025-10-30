@@ -1421,8 +1421,21 @@ class AIToolService extends Component
 
             $section->setSiteSettings($siteSettings);
 
-            // Create a default entry type for the section
+            // Save the section first to get an ID
+            if (!Craft::$app->getEntries()->saveSection($section)) {
+                $sectionErrors = $section->getErrors();
+                Craft::error('Section validation errors: ' . json_encode($sectionErrors), __METHOD__);
+
+                return [
+                    'error' => 'Failed to create section. Validation errors occurred.',
+                    'sectionErrors' => $sectionErrors,
+                    'details' => 'Section could not be validated.',
+                ];
+            }
+
+            // Now create a default entry type for the section
             $entryType = new \craft\models\EntryType();
+            $entryType->sectionId = $section->id;
             $entryType->name = $name;
             $entryType->handle = $handle;
             $entryType->hasTitleField = true;
@@ -1432,26 +1445,19 @@ class AIToolService extends Component
             $fieldLayout->type = Entry::class;
             $entryType->setFieldLayout($fieldLayout);
 
-            // Add entry type to section
-            $section->setEntryTypes([$entryType]);
-
-            // Save the section (this will also save the entry type)
-            if (!Craft::$app->getEntries()->saveSection($section)) {
-                $sectionErrors = $section->getErrors();
+            // Save the entry type
+            if (!Craft::$app->getEntries()->saveEntryType($entryType)) {
                 $entryTypeErrors = $entryType->getErrors();
-
-                Craft::error('Section validation errors: ' . json_encode($sectionErrors), __METHOD__);
                 Craft::error('Entry type validation errors: ' . json_encode($entryTypeErrors), __METHOD__);
 
                 return [
-                    'error' => 'Failed to create section. Validation errors occurred.',
-                    'sectionErrors' => $sectionErrors,
+                    'error' => 'Failed to create entry type. Validation errors occurred.',
                     'entryTypeErrors' => $entryTypeErrors,
-                    'details' => 'Check the validation errors for specific issues.',
+                    'details' => 'Entry type could not be validated.',
                 ];
             }
 
-            Craft::info("Section created: {$handle}", __METHOD__);
+            Craft::info("Section created: {$handle} with entry type", __METHOD__);
 
             return [
                 'success' => true,
