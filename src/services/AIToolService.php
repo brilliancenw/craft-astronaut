@@ -223,6 +223,120 @@ class AIToolService extends Component
                 'description' => 'Check if Craft Commerce is installed and get available product types.',
                 'parameters' => [],
             ],
+            [
+                'name' => 'listFieldTypes',
+                'description' => 'Get a list of all available field types in Craft CMS with descriptions of when to use each type.',
+                'parameters' => [],
+            ],
+            [
+                'name' => 'getSectionTypeInfo',
+                'description' => 'Get detailed information about Craft section types (Single, Channel, Structure) and when to use each one.',
+                'parameters' => [],
+            ],
+            [
+                'name' => 'createSection',
+                'description' => 'Create a new content section in Craft CMS. A section is a container for entries. Choose type based on use case: "single" for one-off pages (About, Homepage), "channel" for streams of similar content (Blog, News), "structure" for hierarchical content (Documentation, Navigation).',
+                'parameters' => [
+                    'name' => [
+                        'type' => 'string',
+                        'description' => 'Human-readable section name (e.g., "Blog Posts")',
+                        'required' => true,
+                    ],
+                    'handle' => [
+                        'type' => 'string',
+                        'description' => 'Unique identifier in camelCase or under_score (e.g., "blogPosts")',
+                        'required' => true,
+                    ],
+                    'type' => [
+                        'type' => 'string',
+                        'description' => 'Section type: "single", "channel", or "structure"',
+                        'required' => true,
+                    ],
+                    'enableVersioning' => [
+                        'type' => 'boolean',
+                        'description' => 'Enable entry versioning (default: true)',
+                        'required' => false,
+                    ],
+                ],
+            ],
+            [
+                'name' => 'createEntryType',
+                'description' => 'Create a new entry type for a section. Entry types define different templates and field layouts within a section. Most sections have one entry type, but you can have multiple (e.g., "Article" and "Video" entry types in a "News" section).',
+                'parameters' => [
+                    'sectionHandle' => [
+                        'type' => 'string',
+                        'description' => 'Handle of the section to add this entry type to',
+                        'required' => true,
+                    ],
+                    'name' => [
+                        'type' => 'string',
+                        'description' => 'Human-readable entry type name (e.g., "Article")',
+                        'required' => true,
+                    ],
+                    'handle' => [
+                        'type' => 'string',
+                        'description' => 'Unique identifier in camelCase (e.g., "article")',
+                        'required' => true,
+                    ],
+                ],
+            ],
+            [
+                'name' => 'createField',
+                'description' => 'Create a new custom field that can be added to entry types, categories, users, etc. Start with "Plain Text" for simple text fields. The field will be created globally and can then be added to any field layout.',
+                'parameters' => [
+                    'name' => [
+                        'type' => 'string',
+                        'description' => 'Human-readable field name (e.g., "Blog Content")',
+                        'required' => true,
+                    ],
+                    'handle' => [
+                        'type' => 'string',
+                        'description' => 'Unique identifier in camelCase (e.g., "blogContent")',
+                        'required' => true,
+                    ],
+                    'type' => [
+                        'type' => 'string',
+                        'description' => 'Field type class name (use listFieldTypes to see options). Common: "craft\\fields\\PlainText" for text',
+                        'required' => true,
+                    ],
+                    'instructions' => [
+                        'type' => 'string',
+                        'description' => 'Help text shown to content editors',
+                        'required' => false,
+                    ],
+                    'required' => [
+                        'type' => 'boolean',
+                        'description' => 'Whether this field is required (default: false)',
+                        'required' => false,
+                    ],
+                ],
+            ],
+            [
+                'name' => 'addFieldToEntryType',
+                'description' => 'Add an existing field to an entry type\'s field layout. This makes the field available when creating entries of this type.',
+                'parameters' => [
+                    'entryTypeHandle' => [
+                        'type' => 'string',
+                        'description' => 'Handle of the entry type',
+                        'required' => true,
+                    ],
+                    'fieldHandle' => [
+                        'type' => 'string',
+                        'description' => 'Handle of the field to add',
+                        'required' => true,
+                    ],
+                    'tabName' => [
+                        'type' => 'string',
+                        'description' => 'Name of the tab to add field to (default: "Content")',
+                        'required' => false,
+                    ],
+                    'required' => [
+                        'type' => 'boolean',
+                        'description' => 'Make this field required in this layout (default: false)',
+                        'required' => false,
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -269,6 +383,32 @@ class AIToolService extends Component
                 'runQueueJobs' => $this->runQueueJobs($parameters['limit'] ?? 10),
                 'getSystemInfo' => $this->getSystemInfo(),
                 'getCommerceStatus' => $this->getCommerceStatus(),
+                'listFieldTypes' => $this->listFieldTypes(),
+                'getSectionTypeInfo' => $this->getSectionTypeInfo(),
+                'createSection' => $this->createSection(
+                    $parameters['name'] ?? '',
+                    $parameters['handle'] ?? '',
+                    $parameters['type'] ?? '',
+                    $parameters['enableVersioning'] ?? true
+                ),
+                'createEntryType' => $this->createEntryType(
+                    $parameters['sectionHandle'] ?? '',
+                    $parameters['name'] ?? '',
+                    $parameters['handle'] ?? ''
+                ),
+                'createField' => $this->createField(
+                    $parameters['name'] ?? '',
+                    $parameters['handle'] ?? '',
+                    $parameters['type'] ?? '',
+                    $parameters['instructions'] ?? '',
+                    $parameters['required'] ?? false
+                ),
+                'addFieldToEntryType' => $this->addFieldToEntryType(
+                    $parameters['entryTypeHandle'] ?? '',
+                    $parameters['fieldHandle'] ?? '',
+                    $parameters['tabName'] ?? 'Content',
+                    $parameters['required'] ?? false
+                ),
                 default => ['error' => "Unknown tool: {$toolName}"],
             };
 
@@ -1083,6 +1223,478 @@ class AIToolService extends Component
             return [
                 'success' => false,
                 'error' => 'Failed to get system info: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * List all available field types with descriptions
+     */
+    private function listFieldTypes(): array
+    {
+        $fieldTypes = [
+            [
+                'class' => 'craft\\fields\\PlainText',
+                'name' => 'Plain Text',
+                'description' => 'Simple text field for short text content (headlines, names, single lines)',
+                'useCase' => 'Short text, names, titles, simple content',
+            ],
+            [
+                'class' => 'craft\\fields\\Url',
+                'name' => 'URL',
+                'description' => 'Validated URL field',
+                'useCase' => 'Website links, external URLs',
+            ],
+            [
+                'class' => 'craft\\fields\\Email',
+                'name' => 'Email',
+                'description' => 'Validated email address field',
+                'useCase' => 'Email addresses',
+            ],
+            [
+                'class' => 'craft\\fields\\Number',
+                'name' => 'Number',
+                'description' => 'Numeric field with optional min/max validation',
+                'useCase' => 'Prices, quantities, ratings',
+            ],
+            [
+                'class' => 'craft\\fields\\Dropdown',
+                'name' => 'Dropdown',
+                'description' => 'Select one option from a predefined list',
+                'useCase' => 'Status, category, single choice from options',
+            ],
+            [
+                'class' => 'craft\\fields\\Checkboxes',
+                'name' => 'Checkboxes',
+                'description' => 'Select multiple options from a predefined list',
+                'useCase' => 'Tags, features, multiple choices',
+            ],
+            [
+                'class' => 'craft\\fields\\Lightswitch',
+                'name' => 'Lightswitch',
+                'description' => 'Simple on/off toggle',
+                'useCase' => 'Boolean values, feature flags, yes/no',
+            ],
+            [
+                'class' => 'craft\\fields\\Date',
+                'name' => 'Date/Time',
+                'description' => 'Date and time picker',
+                'useCase' => 'Event dates, publication dates, deadlines',
+            ],
+            [
+                'class' => 'craft\\fields\\Assets',
+                'name' => 'Assets',
+                'description' => 'Relate to uploaded files (images, videos, PDFs)',
+                'useCase' => 'Images, downloads, media files',
+            ],
+            [
+                'class' => 'craft\\fields\\Entries',
+                'name' => 'Entries',
+                'description' => 'Relate to other entries',
+                'useCase' => 'Related articles, linked content',
+            ],
+            [
+                'class' => 'craft\\fields\\Categories',
+                'name' => 'Categories',
+                'description' => 'Relate to categories',
+                'useCase' => 'Organizing content by category',
+            ],
+            [
+                'class' => 'craft\\fields\\Table',
+                'name' => 'Table',
+                'description' => 'Editable table with custom columns',
+                'useCase' => 'Pricing tables, specifications, data grids',
+            ],
+            [
+                'class' => 'craft\\fields\\Matrix',
+                'name' => 'Matrix',
+                'description' => 'Create repeating blocks of content with different layouts',
+                'useCase' => 'Flexible content blocks, page builders',
+            ],
+            [
+                'class' => 'craft\\ckeditor\\Field',
+                'name' => 'CKEditor',
+                'description' => 'Rich text editor for formatted content (if CKEditor plugin installed)',
+                'useCase' => 'Long-form content, blog posts, formatted text',
+            ],
+        ];
+
+        return [
+            'fieldTypes' => $fieldTypes,
+            'totalCount' => count($fieldTypes),
+        ];
+    }
+
+    /**
+     * Get information about section types
+     */
+    private function getSectionTypeInfo(): array
+    {
+        return [
+            'sectionTypes' => [
+                [
+                    'type' => 'single',
+                    'name' => 'Single',
+                    'description' => 'For one-off pages that don\'t need multiple entries',
+                    'examples' => ['Homepage', 'About Page', 'Contact Page'],
+                    'characteristics' => [
+                        'Only one entry per site',
+                        'Good for unique pages',
+                        'Cannot have multiple entries',
+                    ],
+                ],
+                [
+                    'type' => 'channel',
+                    'name' => 'Channel',
+                    'description' => 'For streams of similar content entries',
+                    'examples' => ['Blog Posts', 'News Articles', 'Team Members'],
+                    'characteristics' => [
+                        'Unlimited entries',
+                        'Entries are independent',
+                        'Most common section type',
+                        'Default sort by date',
+                    ],
+                ],
+                [
+                    'type' => 'structure',
+                    'name' => 'Structure',
+                    'description' => 'For hierarchical, organized content',
+                    'examples' => ['Documentation', 'Navigation Menu', 'Page Tree'],
+                    'characteristics' => [
+                        'Entries can be nested/hierarchical',
+                        'Parent-child relationships',
+                        'Custom ordering',
+                        'Great for navigation',
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Create a new section
+     */
+    private function createSection(string $name, string $handle, string $type, bool $enableVersioning = true): array
+    {
+        if (empty($name) || empty($handle) || empty($type)) {
+            return ['error' => 'Name, handle, and type are required'];
+        }
+
+        // Validate type
+        if (!in_array($type, ['single', 'channel', 'structure'])) {
+            return ['error' => 'Type must be "single", "channel", or "structure"'];
+        }
+
+        try {
+            // Check if section already exists
+            $existingSection = Craft::$app->sections->getSectionByHandle($handle);
+            if ($existingSection) {
+                return ['error' => "Section with handle '{$handle}' already exists"];
+            }
+
+            $section = new \craft\models\Section();
+            $section->name = $name;
+            $section->handle = $handle;
+            $section->type = $type;
+            $section->enableVersioning = $enableVersioning;
+
+            // Set up site settings (required)
+            $allSites = Craft::$app->sites->getAllSites();
+            $siteSettings = [];
+
+            foreach ($allSites as $site) {
+                $siteSettings[$site->id] = new \craft\models\Section_SiteSettings();
+                $siteSettings[$site->id]->siteId = $site->id;
+                $siteSettings[$site->id]->enabledByDefault = true;
+                $siteSettings[$site->id]->hasUrls = true;
+
+                // Set URI format based on type
+                if ($type === 'single') {
+                    $siteSettings[$site->id]->uriFormat = $handle;
+                } else {
+                    $siteSettings[$site->id]->uriFormat = $handle . '/{slug}';
+                }
+
+                $siteSettings[$site->id]->template = '_' . $handle . '/entry';
+            }
+
+            $section->setSiteSettings($siteSettings);
+
+            // Save the section
+            if (!Craft::$app->sections->saveSection($section)) {
+                return [
+                    'error' => 'Failed to create section',
+                    'errors' => $section->getErrors(),
+                ];
+            }
+
+            Craft::info("Section created: {$handle}", __METHOD__);
+
+            return [
+                'success' => true,
+                'message' => "Section '{$name}' created successfully",
+                'section' => [
+                    'id' => $section->id,
+                    'name' => $section->name,
+                    'handle' => $section->handle,
+                    'type' => $section->type,
+                ],
+                'nextSteps' => [
+                    'An entry type will be automatically created',
+                    'You can now create fields and add them to this section\'s entry type',
+                    'Use createField to create custom fields',
+                    'Use addFieldToEntryType to add fields to the entry type',
+                ],
+            ];
+        } catch (\Exception $e) {
+            Craft::error('Failed to create section: ' . $e->getMessage(), __METHOD__);
+            return [
+                'error' => 'Failed to create section: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Create a new entry type
+     */
+    private function createEntryType(string $sectionHandle, string $name, string $handle): array
+    {
+        if (empty($sectionHandle) || empty($name) || empty($handle)) {
+            return ['error' => 'Section handle, name, and handle are required'];
+        }
+
+        try {
+            // Get the section
+            $section = Craft::$app->sections->getSectionByHandle($sectionHandle);
+            if (!$section) {
+                return ['error' => "Section not found: {$sectionHandle}"];
+            }
+
+            // Check if entry type already exists
+            $existingTypes = $section->getEntryTypes();
+            foreach ($existingTypes as $existingType) {
+                if ($existingType->handle === $handle) {
+                    return ['error' => "Entry type with handle '{$handle}' already exists in this section"];
+                }
+            }
+
+            $entryType = new \craft\models\EntryType();
+            $entryType->sectionId = $section->id;
+            $entryType->name = $name;
+            $entryType->handle = $handle;
+            $entryType->hasTitleField = true;
+
+            // Create empty field layout
+            $fieldLayout = new \craft\models\FieldLayout();
+            $fieldLayout->type = Entry::class;
+            $entryType->setFieldLayout($fieldLayout);
+
+            // Save the entry type
+            if (!Craft::$app->entries->saveEntryType($entryType)) {
+                return [
+                    'error' => 'Failed to create entry type',
+                    'errors' => $entryType->getErrors(),
+                ];
+            }
+
+            Craft::info("Entry type created: {$handle} in section {$sectionHandle}", __METHOD__);
+
+            return [
+                'success' => true,
+                'message' => "Entry type '{$name}' created successfully",
+                'entryType' => [
+                    'id' => $entryType->id,
+                    'name' => $entryType->name,
+                    'handle' => $entryType->handle,
+                    'sectionHandle' => $sectionHandle,
+                ],
+                'nextSteps' => [
+                    'Create fields using createField',
+                    'Add fields to this entry type using addFieldToEntryType',
+                ],
+            ];
+        } catch (\Exception $e) {
+            Craft::error('Failed to create entry type: ' . $e->getMessage(), __METHOD__);
+            return [
+                'error' => 'Failed to create entry type: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Create a new field
+     */
+    private function createField(string $name, string $handle, string $type, string $instructions = '', bool $required = false): array
+    {
+        if (empty($name) || empty($handle) || empty($type)) {
+            return ['error' => 'Name, handle, and type are required'];
+        }
+
+        try {
+            // Check if field already exists
+            $existingField = Craft::$app->fields->getFieldByHandle($handle);
+            if ($existingField) {
+                return ['error' => "Field with handle '{$handle}' already exists"];
+            }
+
+            // Validate field type exists
+            if (!class_exists($type)) {
+                return ['error' => "Field type class not found: {$type}. Use listFieldTypes to see available types."];
+            }
+
+            $field = new $type();
+            $field->name = $name;
+            $field->handle = $handle;
+            $field->instructions = $instructions;
+
+            // Save the field
+            if (!Craft::$app->fields->saveField($field)) {
+                return [
+                    'error' => 'Failed to create field',
+                    'errors' => $field->getErrors(),
+                ];
+            }
+
+            Craft::info("Field created: {$handle}", __METHOD__);
+
+            return [
+                'success' => true,
+                'message' => "Field '{$name}' created successfully",
+                'field' => [
+                    'id' => $field->id,
+                    'name' => $field->name,
+                    'handle' => $field->handle,
+                    'type' => get_class($field),
+                ],
+                'nextSteps' => [
+                    'Field is now available globally',
+                    'Add it to an entry type using addFieldToEntryType',
+                    'Specify which entry types should have this field',
+                ],
+            ];
+        } catch (\Exception $e) {
+            Craft::error('Failed to create field: ' . $e->getMessage(), __METHOD__);
+            return [
+                'error' => 'Failed to create field: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Add a field to an entry type's field layout
+     */
+    private function addFieldToEntryType(string $entryTypeHandle, string $fieldHandle, string $tabName = 'Content', bool $required = false): array
+    {
+        if (empty($entryTypeHandle) || empty($fieldHandle)) {
+            return ['error' => 'Entry type handle and field handle are required'];
+        }
+
+        try {
+            // Find the entry type
+            $entryType = null;
+            $sections = Craft::$app->sections->getAllSections();
+
+            foreach ($sections as $section) {
+                foreach ($section->getEntryTypes() as $type) {
+                    if ($type->handle === $entryTypeHandle) {
+                        $entryType = $type;
+                        break 2;
+                    }
+                }
+            }
+
+            if (!$entryType) {
+                return ['error' => "Entry type not found: {$entryTypeHandle}"];
+            }
+
+            // Get the field
+            $field = Craft::$app->fields->getFieldByHandle($fieldHandle);
+            if (!$field) {
+                return ['error' => "Field not found: {$fieldHandle}"];
+            }
+
+            // Get or create field layout
+            $fieldLayout = $entryType->getFieldLayout() ?? new \craft\models\FieldLayout();
+            $fieldLayout->type = Entry::class;
+
+            // Get existing tabs or create new one
+            $tabs = $fieldLayout->getTabs();
+            $targetTab = null;
+
+            foreach ($tabs as $tab) {
+                if ($tab->name === $tabName) {
+                    $targetTab = $tab;
+                    break;
+                }
+            }
+
+            // Create tab if it doesn't exist
+            if (!$targetTab) {
+                $targetTab = new \craft\models\FieldLayoutTab();
+                $targetTab->name = $tabName;
+                $targetTab->setLayout($fieldLayout);
+            }
+
+            // Check if field is already in the layout
+            $elements = $targetTab->getElements();
+            foreach ($elements as $element) {
+                if ($element instanceof \craft\fieldlayoutelements\CustomField) {
+                    if ($element->getField()->handle === $fieldHandle) {
+                        return ['error' => "Field '{$fieldHandle}' is already in this entry type"];
+                    }
+                }
+            }
+
+            // Create field layout element
+            $fieldLayoutElement = new \craft\fieldlayoutelements\CustomField($field);
+            $fieldLayoutElement->required = $required;
+
+            // Add field to tab
+            $elements[] = $fieldLayoutElement;
+            $targetTab->setElements($elements);
+
+            // Set tabs on layout
+            $allTabs = [];
+            $tabFound = false;
+            foreach ($tabs as $tab) {
+                if ($tab->name === $tabName) {
+                    $allTabs[] = $targetTab;
+                    $tabFound = true;
+                } else {
+                    $allTabs[] = $tab;
+                }
+            }
+            if (!$tabFound) {
+                $allTabs[] = $targetTab;
+            }
+
+            $fieldLayout->setTabs($allTabs);
+            $entryType->setFieldLayout($fieldLayout);
+
+            // Save the entry type
+            if (!Craft::$app->entries->saveEntryType($entryType)) {
+                return [
+                    'error' => 'Failed to update entry type',
+                    'errors' => $entryType->getErrors(),
+                ];
+            }
+
+            Craft::info("Field '{$fieldHandle}' added to entry type '{$entryTypeHandle}'", __METHOD__);
+
+            return [
+                'success' => true,
+                'message' => "Field '{$fieldHandle}' added to entry type '{$entryTypeHandle}' successfully",
+                'layout' => [
+                    'entryType' => $entryTypeHandle,
+                    'tab' => $tabName,
+                    'field' => $fieldHandle,
+                    'required' => $required,
+                ],
+            ];
+        } catch (\Exception $e) {
+            Craft::error('Failed to add field to entry type: ' . $e->getMessage(), __METHOD__);
+            return [
+                'error' => 'Failed to add field to entry type: ' . $e->getMessage(),
             ];
         }
     }
