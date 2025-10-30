@@ -7,6 +7,7 @@ use Craft;
 use craft\base\Component;
 use craft\elements\Entry;
 use craft\helpers\Json;
+use craft\helpers\UrlHelper;
 
 /**
  * AI Tool Service
@@ -1420,7 +1421,21 @@ class AIToolService extends Component
 
             $section->setSiteSettings($siteSettings);
 
-            // Save the section
+            // Create a default entry type for the section
+            $entryType = new \craft\models\EntryType();
+            $entryType->name = $name;
+            $entryType->handle = $handle;
+            $entryType->hasTitleField = true;
+
+            // Create empty field layout for entry type
+            $fieldLayout = new \craft\models\FieldLayout();
+            $fieldLayout->type = Entry::class;
+            $entryType->setFieldLayout($fieldLayout);
+
+            // Add entry type to section
+            $section->setEntryTypes([$entryType]);
+
+            // Save the section (this will also save the entry type)
             if (!Craft::$app->sections->saveSection($section)) {
                 return [
                     'error' => 'Failed to create section',
@@ -1439,8 +1454,13 @@ class AIToolService extends Component
                     'handle' => $section->handle,
                     'type' => $section->type,
                 ],
+                'entryType' => [
+                    'name' => $entryType->name,
+                    'handle' => $entryType->handle,
+                ],
+                'url' => UrlHelper::cpUrl("settings/sections/{$section->id}"),
                 'nextSteps' => [
-                    'An entry type will be automatically created',
+                    'Entry type "' . $name . '" was automatically created',
                     'You can now create fields and add them to this section\'s entry type',
                     'Use createField to create custom fields',
                     'Use addFieldToEntryType to add fields to the entry type',
@@ -1566,6 +1586,7 @@ class AIToolService extends Component
                     'handle' => $field->handle,
                     'type' => get_class($field),
                 ],
+                'url' => UrlHelper::cpUrl("settings/fields/edit/{$field->id}"),
                 'nextSteps' => [
                     'Field is now available globally',
                     'Add it to an entry type using addFieldToEntryType',
@@ -1592,12 +1613,14 @@ class AIToolService extends Component
         try {
             // Find the entry type
             $entryType = null;
+            $parentSection = null;
             $sections = Craft::$app->sections->getAllSections();
 
             foreach ($sections as $section) {
                 foreach ($section->getEntryTypes() as $type) {
                     if ($type->handle === $entryTypeHandle) {
                         $entryType = $type;
+                        $parentSection = $section;
                         break 2;
                     }
                 }
@@ -1690,6 +1713,7 @@ class AIToolService extends Component
                     'field' => $fieldHandle,
                     'required' => $required,
                 ],
+                'url' => UrlHelper::cpUrl("settings/sections/{$parentSection->id}/entry-types/{$entryType->id}"),
             ];
         } catch (\Exception $e) {
             Craft::error('Failed to add field to entry type: ' . $e->getMessage(), __METHOD__);
