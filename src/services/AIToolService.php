@@ -1422,28 +1422,15 @@ class AIToolService extends Component
             $section->setSiteSettings($siteSettings);
 
             // Create a default entry type for the section
+            // Note: We cannot set sectionId yet as the section doesn't have an ID
             $entryType = new \craft\models\EntryType();
             $entryType->name = $name;
             $entryType->handle = $handle;
             $entryType->hasTitleField = true;
 
-            // Create a minimal field layout with a Title field for the entry type
+            // Create simple empty field layout (Craft will auto-populate with title field)
             $fieldLayout = new \craft\models\FieldLayout();
             $fieldLayout->type = Entry::class;
-
-            // Create a default tab
-            $tab = new \craft\models\FieldLayoutTab();
-            $tab->name = 'Content';
-            $tab->setLayout($fieldLayout);
-
-            // Add the Title field element
-            $titleElement = new \craft\fieldlayoutelements\entries\EntryTitleField();
-            $titleElement->label = 'Title';
-            $titleElement->required = true;
-
-            $tab->setElements([$titleElement]);
-            $fieldLayout->setTabs([$tab]);
-
             $entryType->setFieldLayout($fieldLayout);
 
             // Add entry type to section before saving
