@@ -219,35 +219,82 @@ class LauncherAssistant extends Plugin
             }
         );
 
-        // Register drawer provider for conversation history
-        if ($this->isRocketLauncherInstalled()) {
-            $launcher = \brilliance\launcher\Launcher::$plugin;
-            if ($launcher && isset($launcher->drawer)) {
-                $launcher->drawer->registerProvider('astronaut', function($context) {
-                    // Only provide content for assistant context
-                    if ($context !== 'assistant') {
-                        return null;
-                    }
-
-                    return [
-                        'title' => 'Conversations',
-                        'sections' => [
-                            [
-                                'title' => 'Chat History',
-                                'content' => '<div id="launcher-ai-drawer-conversations" data-loading="true">Loading conversations...</div>',
-                            ],
-                        ],
-                        'actions' => [
-                            [
-                                'label' => 'New Chat',
-                                'id' => 'launcher-ai-new-chat-action',
-                                'icon' => 'plus',
-                            ],
-                        ],
-                    ];
-                }, 100); // Higher priority so it shows first
+        // Register drawer provider after all plugins are loaded
+        Event::on(
+            \craft\services\Plugins::class,
+            \craft\services\Plugins::EVENT_AFTER_LOAD_PLUGINS,
+            function() {
+                $this->registerDrawerProvider();
             }
+        );
+    }
+
+    /**
+     * Register drawer provider for conversation history
+     */
+    protected function registerDrawerProvider(): void
+    {
+        $launcher = \brilliance\launcher\Launcher::getInstance();
+
+        if (!$launcher || !isset($launcher->drawer)) {
+            return;
         }
+
+        $launcher->drawer->registerProvider('astronaut', function($context) {
+            // Only provide content for assistant context
+            if ($context !== 'assistant') {
+                return null;
+            }
+
+            return [
+                'sections' => [
+                    [
+                        'title' => 'Astronaut Assistant',
+                        'content' => '
+                            <div class="launcher-ai-drawer-tabs">
+                                <button class="launcher-ai-drawer-tab active" data-tab="chats">Chats</button>
+                                <button class="launcher-ai-drawer-tab" data-tab="tips">Tips</button>
+                            </div>
+                            <div class="launcher-ai-drawer-tab-content">
+                                <div id="launcher-ai-drawer-chats-panel" class="launcher-ai-drawer-panel active">
+                                    <button id="launcher-ai-new-chat-action" style="width: 100%; padding: 10px; background: var(--ui-control-color, #0d78f2); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; margin-bottom: 12px;">+ New Chat</button>
+                                    <div id="launcher-ai-drawer-conversations" data-loading="true" style="padding: 8px 0;">Loading conversations...</div>
+                                </div>
+                                <div id="launcher-ai-drawer-tips-panel" class="launcher-ai-drawer-panel">
+                                    <div style="margin-bottom: 16px;">
+                                        <h5 style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--medium-text-color, #606d7b); margin: 0 0 8px 0; letter-spacing: 0.05em;">Quick Tips</h5>
+                                        <ul class="launcher-drawer-list">
+                                            <li>Ask in natural language - Astronaut understands your site</li>
+                                            <li>Request content creation with "Create a blog post about..."</li>
+                                            <li>Search your content with "Find entries in..."</li>
+                                            <li>Clear caches, rebuild indexes, and run utilities</li>
+                                            <li>Get help navigating to settings and admin areas</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--medium-text-color, #606d7b); margin: 0 0 8px 0; letter-spacing: 0.05em;">Resources</h5>
+                                        <div class="launcher-drawer-links">
+                                            <a href="https://plugins.craftcms.com/astronaut" target="_blank" rel="noopener noreferrer" class="launcher-drawer-link">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                                <span>Leave a Review</span>
+                                            </a>
+                                            <a href="https://github.com/brilliancenw/craft-astronaut/issues" target="_blank" rel="noopener noreferrer" class="launcher-drawer-link">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                                <span>Feedback & Suggestions</span>
+                                            </a>
+                                            <a href="https://github.com/brilliancenw/craft-astronaut" target="_blank" rel="noopener noreferrer" class="launcher-drawer-link">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                                                <span>Documentation</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ',
+                    ],
+                ],
+            ];
+        }, 100); // Higher priority so it shows first
     }
 
     /**
