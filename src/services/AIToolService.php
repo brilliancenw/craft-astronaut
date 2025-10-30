@@ -1428,7 +1428,19 @@ class AIToolService extends Component
             $entryType->handle = $handle;
             $entryType->hasTitleField = true;
 
-            // Don't set a field layout - let Craft create it automatically during save
+            // Create a proper field layout configuration
+            $fieldLayoutConfig = [
+                'tabs' => [
+                    [
+                        'name' => 'Content',
+                        'elements' => [],
+                    ],
+                ],
+            ];
+
+            $fieldLayout = \craft\helpers\Cp::fieldLayoutFromConfig($fieldLayoutConfig);
+            $fieldLayout->type = Entry::class;
+            $entryType->setFieldLayout($fieldLayout);
 
             // Add entry type to section before saving
             $section->setEntryTypes([$entryType]);
