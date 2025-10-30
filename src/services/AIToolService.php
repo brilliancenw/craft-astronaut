@@ -582,7 +582,7 @@ class AIToolService extends Component
             return ['error' => 'Field handle is required'];
         }
 
-        $field = Craft::$app->fields->getFieldByHandle($handle);
+        $field = Craft::$app->getFields()->getFieldByHandle($handle);
         if (!$field) {
             return ['error' => "Field not found: {$handle}"];
         }
@@ -602,7 +602,7 @@ class AIToolService extends Component
      */
     private function listFields(): array
     {
-        $fields = Craft::$app->fields->getAllFields();
+        $fields = Craft::$app->getFields()->getAllFields();
         $result = [];
 
         foreach ($fields as $field) {
@@ -709,7 +709,7 @@ class AIToolService extends Component
      */
     private function listCategoryGroups(): array
     {
-        $groups = Craft::$app->categories->getAllGroups();
+        $groups = Craft::$app->getCategories()->getAllGroups();
         $result = [];
 
         foreach ($groups as $group) {
@@ -735,7 +735,7 @@ class AIToolService extends Component
             return ['error' => 'Category group handle is required'];
         }
 
-        $group = Craft::$app->categories->getGroupByHandle($handle);
+        $group = Craft::$app->getCategories()->getGroupByHandle($handle);
         if (!$group) {
             return ['error' => "Category group not found: {$handle}"];
         }
@@ -1388,7 +1388,7 @@ class AIToolService extends Component
 
         try {
             // Check if section already exists
-            $existingSection = Craft::$app->sections->getSectionByHandle($handle);
+            $existingSection = Craft::$app->getSections()->getSectionByHandle($handle);
             if ($existingSection) {
                 return ['error' => "Section with handle '{$handle}' already exists"];
             }
@@ -1400,7 +1400,7 @@ class AIToolService extends Component
             $section->enableVersioning = $enableVersioning;
 
             // Set up site settings (required)
-            $allSites = Craft::$app->sites->getAllSites();
+            $allSites = Craft::$app->getSites()->getAllSites();
             $siteSettings = [];
 
             foreach ($allSites as $site) {
@@ -1436,10 +1436,18 @@ class AIToolService extends Component
             $section->setEntryTypes([$entryType]);
 
             // Save the section (this will also save the entry type)
-            if (!Craft::$app->sections->saveSection($section)) {
+            if (!Craft::$app->getSections()->saveSection($section)) {
+                $sectionErrors = $section->getErrors();
+                $entryTypeErrors = $entryType->getErrors();
+
+                Craft::error('Section validation errors: ' . json_encode($sectionErrors), __METHOD__);
+                Craft::error('Entry type validation errors: ' . json_encode($entryTypeErrors), __METHOD__);
+
                 return [
-                    'error' => 'Failed to create section',
-                    'errors' => $section->getErrors(),
+                    'error' => 'Failed to create section. Validation errors occurred.',
+                    'sectionErrors' => $sectionErrors,
+                    'entryTypeErrors' => $entryTypeErrors,
+                    'details' => 'Check the validation errors for specific issues.',
                 ];
             }
 
@@ -1485,7 +1493,7 @@ class AIToolService extends Component
 
         try {
             // Get the section
-            $section = Craft::$app->sections->getSectionByHandle($sectionHandle);
+            $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);
             if (!$section) {
                 return ['error' => "Section not found: {$sectionHandle}"];
             }
@@ -1510,7 +1518,7 @@ class AIToolService extends Component
             $entryType->setFieldLayout($fieldLayout);
 
             // Save the entry type
-            if (!Craft::$app->entries->saveEntryType($entryType)) {
+            if (!Craft::$app->getEntries()->saveEntryType($entryType)) {
                 return [
                     'error' => 'Failed to create entry type',
                     'errors' => $entryType->getErrors(),
@@ -1552,7 +1560,7 @@ class AIToolService extends Component
 
         try {
             // Check if field already exists
-            $existingField = Craft::$app->fields->getFieldByHandle($handle);
+            $existingField = Craft::$app->getFields()->getFieldByHandle($handle);
             if ($existingField) {
                 return ['error' => "Field with handle '{$handle}' already exists"];
             }
@@ -1568,7 +1576,7 @@ class AIToolService extends Component
             $field->instructions = $instructions;
 
             // Save the field
-            if (!Craft::$app->fields->saveField($field)) {
+            if (!Craft::$app->getFields()->saveField($field)) {
                 return [
                     'error' => 'Failed to create field',
                     'errors' => $field->getErrors(),
@@ -1614,7 +1622,7 @@ class AIToolService extends Component
             // Find the entry type
             $entryType = null;
             $parentSection = null;
-            $sections = Craft::$app->sections->getAllSections();
+            $sections = Craft::$app->getSections()->getAllSections();
 
             foreach ($sections as $section) {
                 foreach ($section->getEntryTypes() as $type) {
@@ -1631,7 +1639,7 @@ class AIToolService extends Component
             }
 
             // Get the field
-            $field = Craft::$app->fields->getFieldByHandle($fieldHandle);
+            $field = Craft::$app->getFields()->getFieldByHandle($fieldHandle);
             if (!$field) {
                 return ['error' => "Field not found: {$fieldHandle}"];
             }
@@ -1695,7 +1703,7 @@ class AIToolService extends Component
             $entryType->setFieldLayout($fieldLayout);
 
             // Save the entry type
-            if (!Craft::$app->entries->saveEntryType($entryType)) {
+            if (!Craft::$app->getEntries()->saveEntryType($entryType)) {
                 return [
                     'error' => 'Failed to update entry type',
                     'errors' => $entryType->getErrors(),
