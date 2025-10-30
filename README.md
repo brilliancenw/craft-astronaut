@@ -1,14 +1,14 @@
-# Launcher Assistant
+# Astronaut
 
-**Professional AI-powered assistant for Craft CMS** that seamlessly integrates with the Launcher plugin, providing intelligent content management and site administration capabilities.
+**The Rocket Launcher Assistant** - Professional AI-powered assistant for Craft CMS that seamlessly integrates with the Rocket Launcher plugin, providing intelligent content management and site administration capabilities.
 
-> **Note:** This is a **commercial plugin** that requires a paid license. However, it depends on the **Craft Launcher** plugin, which is and always will be **free and open source** (GPL-3.0).
+> **Note:** This is a **commercial plugin** that requires a paid license. However, it depends on the **Rocket Launcher** plugin, which is and always will be **free and open source** (GPL-3.0).
 
 ## Requirements
 
 - Craft CMS 5.0.0 or later
 - PHP 8.2 or later
-- **[Craft Launcher](https://github.com/brilliance/craft-launcher) plugin** (required dependency - **FREE forever**)
+- **[Rocket Launcher](https://github.com/brilliance/craft-launcher) plugin** (required dependency - **FREE forever**)
 - Claude API key from [Anthropic](https://console.anthropic.com/) (currently the only supported provider)
 
 ## Features
@@ -31,7 +31,7 @@
 - **Gemini (Google)** - In development
 
 ### Seamless Integration
-- Integrates directly into the Launcher plugin interface
+- Integrates directly into the Rocket Launcher plugin interface
 - Dedicated hotkey (Cmd+J / Ctrl+J) for instant access
 - Persistent conversation history per user
 - Beautiful chat interface with rich text formatting
@@ -39,27 +39,27 @@
 
 ## Installation
 
-### Step 1: Install Craft Launcher (Free)
+### Step 1: Install Rocket Launcher (Free)
 
-First, install the free Craft Launcher plugin if you haven't already:
+First, install the free Rocket Launcher plugin if you haven't already:
 
 ```bash
 composer require brilliance/craft-launcher
 php craft plugin/install launcher
 ```
 
-The Launcher plugin is **completely free** and provides the foundation for the Assistant.
+The Rocket Launcher plugin is **completely free** and provides the foundation for Astronaut.
 
-### Step 2: Install Launcher Assistant (Commercial)
+### Step 2: Install Astronaut (Commercial)
 
 ```bash
-composer require brilliance/craft-launcher-assistant
-php craft plugin/install launcher-assistant
+composer require brilliance/craft-astronaut
+php craft plugin/install astronaut
 ```
 
 ## Configuration
 
-After installation, configure the Assistant through the Craft admin panel:
+After installation, configure Astronaut through the Craft admin panel:
 
 ### 1. API Configuration
 
@@ -91,13 +91,13 @@ These settings help the AI understand your brand and provide more relevant respo
 
 ## Usage
 
-### Opening the Assistant
+### Opening Astronaut
 
-Press **Cmd+J** (Mac) or **Ctrl+J** (Windows/Linux) from anywhere in the Craft admin panel to open the Assistant tab in Launcher.
+Press **Cmd+J** (Mac) or **Ctrl+J** (Windows/Linux) from anywhere in the Craft admin panel to open the Astronaut tab in Rocket Launcher.
 
 ### Example Commands
 
-The assistant can help you with a wide variety of tasks:
+Astronaut can help you with a wide variety of tasks:
 
 **Content Management:**
 - "Create a blog post about our new product launch"
@@ -119,19 +119,19 @@ The assistant can help you with a wide variety of tasks:
 - "Show me the fields in the Blog section"
 - "How many entries are in the News section?"
 
-The assistant understands natural language and will guide you through complex tasks step by step.
+Astronaut understands natural language and will guide you through complex tasks step by step.
 
 ## License & Pricing
 
 ### Commercial License
 
-Launcher Assistant is **commercial software** that requires a paid license for production use. It follows a licensing model similar to Craft CMS itself.
+Astronaut is **commercial software** that requires a paid license for production use. It follows a licensing model similar to Craft CMS itself.
 
 **Purchase a license at:** [brilliancenw.com](https://www.brilliancenw.com/)
 
 ### Free Dependency
 
-This plugin requires **Craft Launcher**, which is completely **FREE and open source** (GPL-3.0) and will always remain free. You can use Launcher without the Assistant at no cost.
+This plugin requires **Rocket Launcher**, which is completely **FREE and open source** (GPL-3.0) and will always remain free. You can use Rocket Launcher without Astronaut at no cost.
 
 ### License Terms
 
@@ -150,11 +150,11 @@ In addition to the plugin license, you'll need an API key from Claude (Anthropic
 ## Support
 
 ### Documentation
-- Plugin Documentation: https://github.com/brilliancenw/craft-launcher-assistant
-- Craft Launcher Docs: https://github.com/brilliance/craft-launcher
+- Plugin Documentation: https://github.com/brilliancenw/craft-astronaut
+- Rocket Launcher Docs: https://github.com/brilliance/craft-launcher
 
 ### Issues & Questions
-- Report bugs: https://github.com/brilliancenw/craft-launcher-assistant/issues
+- Report bugs: https://github.com/brilliancenw/craft-astronaut/issues
 - Email support: info@brilliancenw.com
 - Website: https://www.brilliancenw.com/
 
@@ -172,4 +172,4 @@ Developed by [Brilliance](https://www.brilliancenw.com/) - Craft CMS experts.
 
 ---
 
-**Remember:** While Launcher Assistant is commercial software, the **Craft Launcher** plugin it depends on is and always will be **completely free**!
+**Remember:** While Astronaut is commercial software, the **Rocket Launcher** plugin it depends on is and always will be **completely free**!
