@@ -1436,6 +1436,19 @@ class AIToolService extends Component
             // Add entry type to section before saving
             $section->setEntryTypes([$entryType]);
 
+            // Log the configuration before attempting to save
+            Craft::info('Attempting to save section: ' . json_encode([
+                'name' => $section->name,
+                'handle' => $section->handle,
+                'type' => $section->type,
+                'entryType' => [
+                    'name' => $entryType->name,
+                    'handle' => $entryType->handle,
+                    'hasTitleField' => $entryType->hasTitleField,
+                    'sectionId' => $entryType->sectionId,
+                ],
+            ]), __METHOD__);
+
             // Save the section (this will also save the entry type)
             if (!Craft::$app->getEntries()->saveSection($section)) {
                 $sectionErrors = $section->getErrors();
@@ -1444,11 +1457,19 @@ class AIToolService extends Component
                 Craft::error('Section validation errors: ' . json_encode($sectionErrors), __METHOD__);
                 Craft::error('Entry type validation errors: ' . json_encode($entryTypeErrors), __METHOD__);
 
+                // Get all entry types from the section to check their errors
+                $allEntryTypeErrors = [];
+                foreach ($section->getEntryTypes() as $idx => $et) {
+                    $allEntryTypeErrors[$idx] = $et->getErrors();
+                }
+                Craft::error('All entry type errors: ' . json_encode($allEntryTypeErrors), __METHOD__);
+
                 return [
                     'error' => 'Failed to create section. Validation errors occurred.',
                     'sectionErrors' => $sectionErrors,
                     'entryTypeErrors' => $entryTypeErrors,
-                    'details' => json_encode(['section' => $sectionErrors, 'entryType' => $entryTypeErrors]),
+                    'allEntryTypeErrors' => $allEntryTypeErrors,
+                    'details' => 'Section: ' . json_encode($sectionErrors) . ' | EntryType: ' . json_encode($entryTypeErrors) . ' | All: ' . json_encode($allEntryTypeErrors),
                 ];
             }
 
