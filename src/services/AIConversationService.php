@@ -221,9 +221,9 @@ class AIConversationService extends Component
             ->where(['conversationId' => $conversation->id])
             ->count();
 
-        // Auto-generate title from first message
-        if ($conversation->title === 'New Conversation' && $conversation->messageCount <= 2) {
-            $conversation->title = $this->generateTitle($userMessage);
+        // Auto-generate title after 5 back-and-forths (10 messages)
+        if ($conversation->title === 'New Conversation' && $conversation->messageCount == 10) {
+            $conversation->title = $this->generateTitle($conversation);
         }
 
         $conversation->save();
@@ -359,9 +359,65 @@ class AIConversationService extends Component
     }
 
     /**
-     * Generate a conversation title from the first user message
+     * Generate a conversation title using AI based on conversation history
      */
-    private function generateTitle(string $message): string
+    private function generateTitle(AIConversationRecord $conversation): string
+    {
+        try {
+            // Get conversation messages
+            $messages = $this->getMessages($conversation->id);
+
+            // Build a summary of the conversation for the AI
+            $conversationSummary = '';
+            foreach ($messages as $msg) {
+                if ($msg['role'] === 'user' || $msg['role'] === 'assistant') {
+                    $conversationSummary .= ucfirst($msg['role']) . ": " . $msg['content'] . "\n\n";
+                }
+            }
+
+            // Get AI provider
+            $provider = AIProviderFactory::create($conversation->provider);
+            if (!$provider) {
+                // Fallback to simple title from first message
+                return $this->generateSimpleTitle($messages[0]['content'] ?? 'Conversation');
+            }
+
+            // Create a focused prompt for title generation
+            $titlePrompt = [
+                [
+                    'role' => 'user',
+                    'content' => "Based on the following conversation, generate a concise, descriptive title (3-6 words maximum). The title should capture the main topic or question discussed. Only respond with the title, nothing else.\n\nConversation:\n{$conversationSummary}",
+                ],
+            ];
+
+            $systemPrompt = "You are a helpful assistant that generates concise conversation titles. Respond only with the title, no explanations or punctuation.";
+
+            // Call AI provider without tools
+            $response = $provider->sendMessage($titlePrompt, [], $systemPrompt);
+
+            if ($response->hasError() || empty($response->content)) {
+                // Fallback to simple title
+                return $this->generateSimpleTitle($messages[0]['content'] ?? 'Conversation');
+            }
+
+            // Clean up the title
+            $title = trim($response->content);
+            $title = str_replace(['"', "'", "\r", "\n"], '', $title);
+            $title = StringHelper::safeTruncate($title, 60, '...');
+
+            return $title;
+        } catch (\Exception $e) {
+            Craft::error("Error generating AI title: {$e->getMessage()}", __METHOD__);
+            // Fallback to simple title
+            $firstMessage = $messages[0]['content'] ?? 'Conversation';
+            return $this->generateSimpleTitle($firstMessage);
+        }
+    }
+
+    /**
+     * Generate a simple title by truncating the first message
+     */
+    private function generateSimpleTitle(string $message): string
     {
         // Take first 50 characters and add ellipsis if needed
         $title = StringHelper::safeTruncate($message, 50, '...');

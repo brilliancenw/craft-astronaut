@@ -439,6 +439,43 @@
             });
         },
 
+        getRelativeTime: function(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffSecs = Math.floor(diffMs / 1000);
+            const diffMins = Math.floor(diffSecs / 60);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffSecs < 30) {
+                return 'just now';
+            } else if (diffSecs < 60) {
+                return 'a few moments ago';
+            } else if (diffMins < 2) {
+                return 'a minute ago';
+            } else if (diffMins < 60) {
+                return diffMins + ' minutes ago';
+            } else if (diffHours < 2) {
+                return 'an hour ago';
+            } else if (diffHours < 24) {
+                return diffHours + ' hours ago';
+            } else if (diffDays === 1) {
+                return 'yesterday';
+            } else if (diffDays < 7) {
+                return diffDays + ' days ago';
+            } else if (diffDays < 14) {
+                return 'a week ago';
+            } else if (diffDays < 30) {
+                const weeks = Math.floor(diffDays / 7);
+                return weeks + ' weeks ago';
+            } else if (diffDays < 60) {
+                return 'a month ago';
+            } else {
+                const months = Math.floor(diffDays / 30);
+                return months + ' months ago';
+            }
+        },
+
         renderConversationList: function(conversations, container) {
             if (!conversations || conversations.length === 0) {
                 container.innerHTML = '<p style="padding: 12px; color: #64748b;">No conversations yet</p>';
@@ -450,33 +487,35 @@
 
             conversations.forEach(conv => {
                 const isActive = conv.threadId === self.currentThreadId;
-                const activeClass = isActive ? ' style="background: #e0f2fe; border-color: #0369a1;"' : '';
 
-                // Parse the lastMessageAt date (format: "2025-01-15 12:34:56")
-                const date = conv.lastMessageAt ? new Date(conv.lastMessageAt.replace(' ', 'T')) : new Date();
-                const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                // Parse the lastMessageAt date (format: "2025-01-15 12:34:56" in UTC)
+                // Add 'Z' to indicate UTC time, then browser will convert to local timezone
+                const date = conv.lastMessageAt ? new Date(conv.lastMessageAt.replace(' ', 'T') + 'Z') : new Date();
+                const dateStr = self.getRelativeTime(date);
 
                 const title = conv.title || 'New Conversation';
                 const messageCount = conv.messageCount || 0;
+
+                // Build style with conditional active state
+                const buttonStyle = `
+                    display: block;
+                    width: 100%;
+                    text-align: left;
+                    padding: 10px 12px;
+                    border: 1px solid ${isActive ? '#0369a1' : 'var(--hairline-color, #e3e5e8)'};
+                    border-radius: 4px;
+                    background: ${isActive ? '#e0f2fe' : '#fff'};
+                    cursor: pointer;
+                    transition: all 0.15s ease;
+                    font-size: 13px;
+                    margin-bottom: 6px;
+                `;
 
                 html += `
                     <button
                         class="launcher-ai-conversation-item"
                         data-thread-id="${conv.threadId}"
-                        ${activeClass}
-                        style="
-                            display: block;
-                            width: 100%;
-                            text-align: left;
-                            padding: 10px 12px;
-                            border: 1px solid var(--hairline-color, #e3e5e8);
-                            border-radius: 4px;
-                            background: #fff;
-                            cursor: pointer;
-                            transition: all 0.15s ease;
-                            font-size: 13px;
-                            margin-bottom: 6px;
-                        "
+                        style="${buttonStyle}"
                     >
                         <div style="font-weight: 500; margin-bottom: 4px; color: var(--text-color, #3f4f5f);">${title}</div>
                         <div style="font-size: 11px; color: var(--medium-text-color, #606d7b); display: flex; justify-content: space-between;">
