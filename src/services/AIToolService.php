@@ -1449,26 +1449,21 @@ class AIToolService extends Component
             ]), __METHOD__);
 
             // Save the section (this will also save the entry type)
-            if (!Craft::$app->getEntries()->saveSection($section)) {
-                $sectionErrors = $section->getErrors();
-                $entryTypeErrors = $entryType->getErrors();
+            $saved = Craft::$app->getEntries()->saveSection($section);
 
+            if (!$saved) {
+                $sectionErrors = $section ? $section->getErrors() : ['Section object is null'];
+                $entryTypeErrors = $entryType ? $entryType->getErrors() : ['Entry type object is null'];
+
+                Craft::error('Section save failed', __METHOD__);
                 Craft::error('Section validation errors: ' . json_encode($sectionErrors), __METHOD__);
                 Craft::error('Entry type validation errors: ' . json_encode($entryTypeErrors), __METHOD__);
-
-                // Get all entry types from the section to check their errors
-                $allEntryTypeErrors = [];
-                foreach ($section->getEntryTypes() as $idx => $et) {
-                    $allEntryTypeErrors[$idx] = $et->getErrors();
-                }
-                Craft::error('All entry type errors: ' . json_encode($allEntryTypeErrors), __METHOD__);
 
                 return [
                     'error' => 'Failed to create section. Validation errors occurred.',
                     'sectionErrors' => $sectionErrors,
                     'entryTypeErrors' => $entryTypeErrors,
-                    'allEntryTypeErrors' => $allEntryTypeErrors,
-                    'details' => 'Section: ' . json_encode($sectionErrors) . ' | EntryType: ' . json_encode($entryTypeErrors) . ' | All: ' . json_encode($allEntryTypeErrors),
+                    'details' => 'Section errors: ' . json_encode($sectionErrors) . ' | Entry type errors: ' . json_encode($entryTypeErrors),
                 ];
             }
 
