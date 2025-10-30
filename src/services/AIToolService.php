@@ -1421,39 +1421,47 @@ class AIToolService extends Component
 
             $section->setSiteSettings($siteSettings);
 
-            // Save the section first to get an ID
-            if (!Craft::$app->getEntries()->saveSection($section)) {
-                $sectionErrors = $section->getErrors();
-                Craft::error('Section validation errors: ' . json_encode($sectionErrors), __METHOD__);
-
-                return [
-                    'error' => 'Failed to create section. Validation errors occurred.',
-                    'sectionErrors' => $sectionErrors,
-                    'details' => 'Section could not be validated.',
-                ];
-            }
-
-            // Now create a default entry type for the section
+            // Create a default entry type for the section
             $entryType = new \craft\models\EntryType();
-            $entryType->sectionId = $section->id;
             $entryType->name = $name;
             $entryType->handle = $handle;
             $entryType->hasTitleField = true;
 
-            // Create empty field layout for entry type
+            // Create a minimal field layout with a Title field for the entry type
             $fieldLayout = new \craft\models\FieldLayout();
             $fieldLayout->type = Entry::class;
+
+            // Create a default tab
+            $tab = new \craft\models\FieldLayoutTab();
+            $tab->name = 'Content';
+            $tab->setLayout($fieldLayout);
+
+            // Add the Title field element
+            $titleElement = new \craft\fieldlayoutelements\entries\EntryTitleField();
+            $titleElement->label = 'Title';
+            $titleElement->required = true;
+
+            $tab->setElements([$titleElement]);
+            $fieldLayout->setTabs([$tab]);
+
             $entryType->setFieldLayout($fieldLayout);
 
-            // Save the entry type
-            if (!Craft::$app->getEntries()->saveEntryType($entryType)) {
+            // Add entry type to section before saving
+            $section->setEntryTypes([$entryType]);
+
+            // Save the section (this will also save the entry type)
+            if (!Craft::$app->getEntries()->saveSection($section)) {
+                $sectionErrors = $section->getErrors();
                 $entryTypeErrors = $entryType->getErrors();
+
+                Craft::error('Section validation errors: ' . json_encode($sectionErrors), __METHOD__);
                 Craft::error('Entry type validation errors: ' . json_encode($entryTypeErrors), __METHOD__);
 
                 return [
-                    'error' => 'Failed to create entry type. Validation errors occurred.',
+                    'error' => 'Failed to create section. Validation errors occurred.',
+                    'sectionErrors' => $sectionErrors,
                     'entryTypeErrors' => $entryTypeErrors,
-                    'details' => 'Entry type could not be validated.',
+                    'details' => json_encode(['section' => $sectionErrors, 'entryType' => $entryTypeErrors]),
                 ];
             }
 
