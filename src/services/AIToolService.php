@@ -1388,7 +1388,7 @@ class AIToolService extends Component
 
         try {
             // Check if section already exists
-            $existingSection = Craft::$app->getSections()->getSectionByHandle($handle);
+            $existingSection = Craft::$app->getEntries()->getSectionByHandle($handle);
             if ($existingSection) {
                 return ['error' => "Section with handle '{$handle}' already exists"];
             }
@@ -1436,7 +1436,7 @@ class AIToolService extends Component
             $section->setEntryTypes([$entryType]);
 
             // Save the section (this will also save the entry type)
-            if (!Craft::$app->getSections()->saveSection($section)) {
+            if (!Craft::$app->getEntries()->saveSection($section)) {
                 $sectionErrors = $section->getErrors();
                 $entryTypeErrors = $entryType->getErrors();
 
@@ -1493,7 +1493,7 @@ class AIToolService extends Component
 
         try {
             // Get the section
-            $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);
+            $section = Craft::$app->getEntries()->getSectionByHandle($sectionHandle);
             if (!$section) {
                 return ['error' => "Section not found: {$sectionHandle}"];
             }
@@ -1622,7 +1622,7 @@ class AIToolService extends Component
             // Find the entry type
             $entryType = null;
             $parentSection = null;
-            $sections = Craft::$app->getSections()->getAllSections();
+            $sections = Craft::$app->getEntries()->getAllSections();
 
             foreach ($sections as $section) {
                 foreach ($section->getEntryTypes() as $type) {
