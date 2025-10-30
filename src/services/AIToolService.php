@@ -1445,7 +1445,6 @@ class AIToolService extends Component
                     'name' => $entryType->name,
                     'handle' => $entryType->handle,
                     'hasTitleField' => $entryType->hasTitleField,
-                    'sectionId' => $entryType->sectionId,
                 ],
             ]), __METHOD__);
 
