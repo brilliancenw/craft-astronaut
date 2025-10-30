@@ -218,6 +218,36 @@ class LauncherAssistant extends Plugin
                 ]);
             }
         );
+
+        // Register drawer provider for conversation history
+        if ($this->isRocketLauncherInstalled()) {
+            $launcher = \brilliance\launcher\Launcher::$plugin;
+            if ($launcher && isset($launcher->drawer)) {
+                $launcher->drawer->registerProvider('astronaut', function($context) {
+                    // Only provide content for assistant context
+                    if ($context !== 'assistant') {
+                        return null;
+                    }
+
+                    return [
+                        'title' => 'Conversations',
+                        'sections' => [
+                            [
+                                'title' => 'Chat History',
+                                'content' => '<div id="launcher-ai-drawer-conversations" data-loading="true">Loading conversations...</div>',
+                            ],
+                        ],
+                        'actions' => [
+                            [
+                                'label' => 'New Chat',
+                                'id' => 'launcher-ai-new-chat-action',
+                                'icon' => 'plus',
+                            ],
+                        ],
+                    ];
+                }, 100); // Higher priority so it shows first
+            }
+        }
     }
 
     /**

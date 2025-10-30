@@ -379,6 +379,142 @@
             }, 5000);
         },
 
+        loadConversationList: function() {
+            const container = document.getElementById('launcher-ai-drawer-conversations');
+            if (!container) return;
+
+            const self = this;
+
+            fetch('/actions/astronaut/ai/list', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.conversations) {
+                    self.renderConversationList(data.conversations, container);
+                } else {
+                    container.innerHTML = '<p style="padding: 12px; color: #64748b;">No conversations yet</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Failed to load conversations:', error);
+                container.innerHTML = '<p style="padding: 12px; color: #cf1124;">Failed to load conversations</p>';
+            });
+        },
+
+        renderConversationList: function(conversations, container) {
+            if (!conversations || conversations.length === 0) {
+                container.innerHTML = '<p style="padding: 12px; color: #64748b;">No conversations yet</p>';
+                return;
+            }
+
+            const self = this;
+            let html = '<div style="display: flex; flex-direction: column; gap: 4px;">';
+
+            conversations.forEach(conv => {
+                const isActive = conv.id === self.currentThreadId;
+                const activeClass = isActive ? ' style="background: #e0f2fe; border-color: #0369a1;"' : '';
+                const date = new Date(conv.dateCreated * 1000);
+                const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                html += `
+                    <button
+                        class="launcher-ai-conversation-item"
+                        data-conversation-id="${conv.id}"
+                        ${activeClass}
+                        style="
+                            display: block;
+                            width: 100%;
+                            text-align: left;
+                            padding: 8px 12px;
+                            border: 1px solid var(--hairline-color, #e3e5e8);
+                            border-radius: 4px;
+                            background: #fff;
+                            cursor: pointer;
+                            transition: all 0.15s ease;
+                            font-size: 13px;
+                        "
+                    >
+                        <div style="font-weight: 500; margin-bottom: 2px;">Conversation ${conv.id}</div>
+                        <div style="font-size: 11px; color: #64748b;">${dateStr}</div>
+                    </button>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+            container.removeAttribute('data-loading');
+
+            // Bind click handlers
+            container.querySelectorAll('.launcher-ai-conversation-item').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const convId = parseInt(this.getAttribute('data-conversation-id'));
+                    self.switchConversation(convId);
+                });
+            });
+        },
+
+        switchConversation: function(conversationId) {
+            const self = this;
+
+            // Clear current messages
+            this.messagesContainer.innerHTML = '<div class="launcher-ai-welcome"><h3>Astronaut</h3></div>';
+            this.currentThreadId = conversationId;
+
+            // Load conversation history
+            fetch(`/actions/astronaut/ai/history?conversationId=${conversationId}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.messages) {
+                    // Clear welcome message
+                    self.messagesContainer.innerHTML = '';
+
+                    // Add all messages
+                    data.messages.forEach(msg => {
+                        if (msg.role === 'user' || msg.role === 'assistant') {
+                            self.addMessage(msg.role, msg.content);
+                        }
+                    });
+
+                    self.scrollToBottom();
+                }
+            })
+            .catch(error => {
+                console.error('Failed to load conversation:', error);
+                self.showError('Failed to load conversation');
+            });
+
+            // Reload conversation list to update active state
+            this.loadConversationList();
+        },
+
+        handleNewChat: function() {
+            const self = this;
+
+            // Clear current thread
+            this.currentThreadId = null;
+            this.messagesContainer.innerHTML = '<div class="launcher-ai-welcome"><h3>Astronaut</h3></div>';
+            this.focusInput();
+
+            // Start new conversation
+            this.startConversation();
+
+            // Reload conversation list
+            setTimeout(() => {
+                self.loadConversationList();
+            }, 500);
+        },
+
         scrollToBottom: function() {
             if (this.messagesContainer) {
                 this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
@@ -393,4 +529,26 @@
             }
         },
     };
+
+    // Initialize drawer integration when drawer opens
+    document.addEventListener('DOMContentLoaded', function() {
+        // Watch for drawer opening in assistant context
+        document.addEventListener('click', function(e) {
+            // When drawer toggle is clicked
+            if (e.target.closest('.launcher-drawer-toggle')) {
+                setTimeout(() => {
+                    if (window.LauncherAI && window.LauncherAI.isInitialized) {
+                        window.LauncherAI.loadConversationList();
+                    }
+                }, 100);
+            }
+
+            // Handle new chat button in drawer
+            if (e.target.closest('#launcher-ai-new-chat-action')) {
+                if (window.LauncherAI && window.LauncherAI.isInitialized) {
+                    window.LauncherAI.handleNewChat();
+                }
+            }
+        });
+    });
 })();
